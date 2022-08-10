@@ -42,18 +42,25 @@ TEST_CASE("basic test") {
     return final_states.find(state) != final_states.end();
   });
 
-  auto transitions_from_0_begin = graph.get_transitions_begin(0);
-  auto transitions_from_0_end = graph.get_transitions_end(0);
-  std::vector<std::pair<std::string, int>> transitions_from_0(
-      transitions_from_0_begin, transitions_from_0_end);
-  REQUIRE(transitions_from_0.empty());
+  SECTION("transitions from 0") {
+    auto transitions_from_0_begin = graph.get_transitions_begin(0);
+    auto transitions_from_0_end = graph.get_transitions_end(0);
+    std::vector<std::pair<std::string, int>> transitions_from_0(
+        transitions_from_0_begin, transitions_from_0_end);
+    REQUIRE(transitions_from_0.empty());
+  };
 
-  auto transitions_from_1_begin = graph.get_transitions_begin(1);
-  auto transitions_from_1_end = graph.get_transitions_end(1);
-  std::vector<std::pair<std::string, int>> transitions_from_1(
-      transitions_from_1_begin, transitions_from_1_end);
-  REQUIRE(transitions_from_1 ==
-          std::vector<std::pair<std::string, int>>{{"a", 0}});
+  SECTION("transitions from 1") {
+    auto transitions_from_1_begin = graph.get_transitions_begin(1);
+    auto transitions_from_1_end = graph.get_transitions_end(1);
+    std::vector<std::pair<std::string, int>> transitions_from_1(
+        transitions_from_1_begin, transitions_from_1_end);
+    REQUIRE(transitions_from_1 ==
+            std::vector<std::pair<std::string, int>>{{"a", 0}});
+  }
+
+  SECTION("goal state, positive") { REQUIRE(graph.is_goal_state(0)); }
+  SECTION("goal state, negative") { REQUIRE(!graph.is_goal_state(2)); }
 }
 
 } // namespace Test
