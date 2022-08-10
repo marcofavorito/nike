@@ -10,7 +10,7 @@ fi
 
 MODULE_NAME="$1"
 CODECOV_TOKEN="$2"
-MODULE_ID="cmake-template-${MODULE_NAME}"
+MODULE_ID="nike-${MODULE_NAME}"
 MODULE_TEST_APP="${MODULE_ID}-test"
 
 cd build &&\

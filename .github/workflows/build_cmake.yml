@@ -4,7 +4,7 @@
 # - build: make a build for all the targets
 # - test: run tests
 
-name: MyCMakeTemplate CI pipeline
+name: Nike CI pipeline
 
 on:
   push:

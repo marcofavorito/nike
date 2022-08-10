@@ -1,29 +1,29 @@
 #
-# This file is part of MyCMakeTemplate.
+# This file is part of Nike.
 #
-# MyCMakeTemplate is free software: you can redistribute it and/or modify
+# Nike is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# MyCMakeTemplate is distributed in the hope that it will be useful,
+# Nike is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with MyCMakeTemplate.  If not, see <https://www.gnu.org/licenses/>.
+# along with Nike.  If not, see <https://www.gnu.org/licenses/>.
 #
 
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
-project(my-cmake-template
+project(nike
         LANGUAGES CXX
-        HOMEPAGE_URL https://github.com/marcofavorito/my-cmake-template.git
+        HOMEPAGE_URL https://github.com/marcofavorito/nike.git
         DESCRIPTION "A CMake project template.")
 set(PROJECT_VERSION "0.1.0")
 set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION})
 
-add_definitions( -DMY_CMAKE_TEMPLATE_VERSION="${PROJECT_VERSION}" )
+add_definitions( -DNIKE_VERSION="${PROJECT_VERSION}" )
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -60,17 +60,14 @@ if (PROFILE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
 endif()
 
-
-set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(ROOT_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-set(CMAKE_MODULE_PATH
-        "${CMAKE_MODULE_PATH}"
-        "${CMAKE_ROOT_DIR}/cmake/Modules"
-        "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set (THREADS_PREFER_PTHREAD_FLAG ON)
-find_package (Threads REQUIRED)
+find_package(Threads REQUIRED)
+find_package(CUDD REQUIRED)
+find_package(Graphviz REQUIRED)
+find_package(BISON 3.0 REQUIRED)
+find_package(FLEX 2.6 REQUIRED)
 
 add_subdirectory(vendor EXCLUDE_FROM_ALL)
 add_subdirectory(libs)

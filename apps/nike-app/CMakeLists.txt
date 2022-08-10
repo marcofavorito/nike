@@ -15,4 +15,20 @@
 # along with Nike.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-add_subdirectory(nike-app)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+set(NIKE_APP_NAME nike-app)
+project(${NIKE_APP_NAME})
+
+#configure directories
+set (NIKE_APP_MODULE_PATH ${PROJECT_SOURCE_DIR}/)
+set (NIKE_APP_SRC_PATH  "${NIKE_APP_MODULE_PATH}/src" )
+set (NIKE_APP_INCLUDE_PATH  "${NIKE_APP_MODULE_PATH}/include")
+
+include_directories (${NIKE_LIB1_LIB_INCLUDE_PATH} ${VENDOR_INCLUDE_PATH})
+
+add_executable(${NIKE_APP_NAME} main.cpp)
+target_link_libraries(${NIKE_APP_NAME}
+        PRIVATE # ...
+    )
+target_include_directories(${NIKE_APP_NAME}
+        PRIVATE ${VENDOR_INCLUDE_PATH})

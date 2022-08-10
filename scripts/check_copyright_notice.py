@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# This file is part of MyCMakeTemplate.
+# This file is part of Nike.
 #
-# MyCMakeTemplate is free software: you can redistribute it and/or modify
+# Nike is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# MyCMakeTemplate is distributed in the hope that it will be useful,
+# Nike is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with MyCMakeTemplate.  If not, see <https://www.gnu.org/licenses/>.
+# along with Nike.  If not, see <https://www.gnu.org/licenses/>.
 #
 
 import inspect
@@ -29,36 +29,36 @@ PY_SHEBANG = r"#!/usr/bin/env python3"
 PY_ENCODING_HEADER = r"# -\*- coding: utf-8 -\*-"
 HPP_PRAGMA_ONCE = r"#pragma once"
 STAR_COPYRIGHT_NOTICE = r"""/\*
- \* This file is part of MyCMakeTemplate\.
+ \* This file is part of Nike\.
  \*
- \* MyCMakeTemplate is free software: you can redistribute it and/or modify
+ \* Nike is free software: you can redistribute it and/or modify
  \* it under the terms of the GNU General Public License as published by
  \* the Free Software Foundation, either version 3 of the License, or
  \* \(at your option\) any later version\.
  \*
- \* MyCMakeTemplate is distributed in the hope that it will be useful,
+ \* Nike is distributed in the hope that it will be useful,
  \* but WITHOUT ANY WARRANTY; without even the implied warranty of
  \* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\.  See the
  \* GNU General Public License for more details\.
  \*
  \* You should have received a copy of the GNU General Public License
- \* along with MyCMakeTemplate\.  If not, see <https://www\.gnu\.org/licenses/>\.
+ \* along with Nike\.  If not, see <https://www\.gnu\.org/licenses/>\.
  \*/"""
 HASH_COPYRIGHT_NOTICE = r"""#
-# This file is part of MyCMakeTemplate\.
+# This file is part of Nike\.
 #
-# MyCMakeTemplate is free software: you can redistribute it and/or modify
+# Nike is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # \(at your option\) any later version.
 #
-# MyCMakeTemplate is distributed in the hope that it will be useful,
+# Nike is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\.  See the
 # GNU General Public License for more details\.
 #
 # You should have received a copy of the GNU General Public License
-# along with MyCMakeTemplate\.  If not, see <https://www\.gnu\.org/licenses/>\.
+# along with Nike\.  If not, see <https://www\.gnu\.org/licenses/>\.
 #"""
 
 CPP_HEADER_REGEX = re.compile(r"^{}".format(STAR_COPYRIGHT_NOTICE), re.MULTILINE)
