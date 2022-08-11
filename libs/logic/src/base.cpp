@@ -60,7 +60,7 @@ ltlf_ptr Context::make_bool(bool value) {
   return value ? make_tt() : make_ff();
 }
 
-ltlf_ptr Context::make_atom(const std::string &name) {
+atom_ptr Context::make_atom(const std::string &name) {
   auto atom = std::make_shared<const LTLfAtom>(*this, name);
   auto actual_atom = table_->insert_if_not_available(atom);
   return actual_atom;

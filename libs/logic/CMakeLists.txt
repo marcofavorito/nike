@@ -40,8 +40,7 @@ file (GLOB_RECURSE NIKE_LOGIC_SOURCE_FILES "${NIKE_LOGIC_SRC_PATH}/*.cpp" ${NIKE
 add_library (${NIKE_LOGIC_LIB_NAME}
         STATIC
             ${NIKE_LOGIC_SOURCE_FILES}
-            ${NIKE_LOGIC_HEADER_FILES}
-        ../search/include/nike/search/base_graph.hpp)
+            ${NIKE_LOGIC_HEADER_FILES})
 target_link_libraries(${NIKE_LOGIC_LIB_NAME}
         ${NIKE_UTILS_LIB_NAME}
         ${FLEX_LIBRARIES}

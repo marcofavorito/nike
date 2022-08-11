@@ -67,7 +67,7 @@ public:
   ltlf_ptr make_not_end();
   ltlf_ptr make_last();
   ltlf_ptr make_bool(bool value);
-  ltlf_ptr make_atom(const std::string &name);
+  atom_ptr make_atom(const std::string &name);
   ltlf_ptr make_not(const ltlf_ptr &arg);
   ltlf_ptr make_prop_not(const ltlf_ptr &arg);
   ltlf_ptr make_not_unified(const ltlf_ptr &arg);
