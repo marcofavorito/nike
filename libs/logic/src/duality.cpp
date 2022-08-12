@@ -39,7 +39,8 @@ void NegationTransformer::visit(const LTLfPropFalse &formula) {
 void NegationTransformer::visit(const LTLfAtom &formula) {
   //  nnf(~a) = !a | end
   auto &context = formula.ctx();
-  auto prop_not_atom = context.make_prop_not(formula.shared_from_this());
+  auto prop_not_atom = context.make_prop_not(
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this()));
   auto end = context.make_end();
   result = context.make_or(vec_ptr{prop_not_atom, end});
 }

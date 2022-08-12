@@ -17,6 +17,7 @@
  */
 
 #include <nike/logic/ltlf.hpp>
+#include <nike/logic/pl.hpp>
 
 namespace nike {
 namespace logic {
@@ -27,6 +28,16 @@ inline ltlf_ptr forward_call_to_arguments(const LTLfBinaryOp &formula,
                                           Function2 factory_function) {
   const auto &container = formula.args;
   auto new_container = vec_ptr(container.size());
+  std::transform(container.begin(), container.end(), new_container.begin(),
+                 mapping_function);
+  return factory_function(new_container);
+}
+template <typename Function1, typename Function2>
+inline pl_ptr forward_call_to_arguments(const PLBinaryOp &formula,
+                                        Function1 mapping_function,
+                                        Function2 factory_function) {
+  const auto &container = formula.args;
+  auto new_container = vec_pl_ptr(container.size());
   std::transform(container.begin(), container.end(), new_container.begin(),
                  mapping_function);
   return factory_function(new_container);

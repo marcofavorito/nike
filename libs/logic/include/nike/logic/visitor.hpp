@@ -17,6 +17,7 @@
  */
 
 #include <nike/logic/ltlf.hpp>
+#include <nike/logic/pl.hpp>
 
 namespace nike {
 namespace logic {
@@ -39,6 +40,14 @@ inline void throw_expected_xnf() {
  */
 class Visitor {
 public:
+  virtual void visit(const StringSymbol &) { throw_not_implemented_error(); };
+
+  virtual void visit(const PLTrue &) { throw_not_implemented_error(); };
+  virtual void visit(const PLFalse &) { throw_not_implemented_error(); };
+  virtual void visit(const PLLiteral &) { throw_not_implemented_error(); };
+  virtual void visit(const PLAnd &) { throw_not_implemented_error(); };
+  virtual void visit(const PLOr &) { throw_not_implemented_error(); };
+
   virtual void visit(const LTLfTrue &) { throw_not_implemented_error(); };
   virtual void visit(const LTLfFalse &) { throw_not_implemented_error(); };
   virtual void visit(const LTLfPropTrue &) { throw_not_implemented_error(); };

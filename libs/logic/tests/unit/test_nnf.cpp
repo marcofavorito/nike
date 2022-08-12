@@ -76,6 +76,30 @@ TEST_CASE("Test NNF of doubly negated atomic") {
   REQUIRE(a == actual_formula);
 }
 
+TEST_CASE("Test NNF of logical negation of atomic") {
+  // ~a = !a | end
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto not_a = context.make_prop_not(a);
+  auto logical_not_a = context.make_not(a);
+  auto end = context.make_end();
+  auto not_a_or_end = context.make_or(vec_ptr{not_a, end});
+  auto actual_formula = to_nnf(*logical_not_a);
+  REQUIRE(not_a_or_end == actual_formula);
+}
+
+TEST_CASE("Test NNF of logical negation of negated atomic") {
+  // ~(!a) = a | end
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto not_a = context.make_prop_not(a);
+  auto logical_not_propnot_a = context.make_not(not_a);
+  auto end = context.make_end();
+  auto a_or_end = context.make_or(vec_ptr{a, end});
+  auto actual_formula = to_nnf(*logical_not_propnot_a);
+  REQUIRE(a_or_end == actual_formula);
+}
+
 TEST_CASE("Test NNF of next") {
   // ~X[!]a = X(!a | end)
   auto context = Context();

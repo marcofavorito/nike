@@ -15,4 +15,28 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-int main(int argc, char **argv) { return 0; }
+#include <nike/core.hpp>
+#include <nike/parser/driver.hpp>
+#include <sstream>
+#include <string>
+
+int main(int argc, char **argv) {
+
+  std::string formula = "F(x)";
+  std::string part_file = "ignore/part.part";
+  auto driver = nike::parser::ltlf::LTLfDriver();
+  std::stringstream formula_stream(formula);
+  driver.parse(formula_stream);
+
+  auto parsed_formula = driver.get_result();
+  auto partition = nike::core::InputOutputPartition::read_from_file(part_file);
+
+  bool result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
+      parsed_formula, partition, true);
+  if (result)
+    std::cout << "realizable." << std::endl;
+  else
+    std::cout << "unrealizable." << std::endl;
+
+  return 0;
+}

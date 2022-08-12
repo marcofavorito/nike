@@ -27,21 +27,6 @@ namespace logic {
 
 inline bool is_propositional(const ltlf_ptr &arg);
 
-class Symbol : public AstNode {
-private:
-  const std::string name_;
-
-public:
-  const static TypeID type_code_id = TypeID::t_Symbol;
-  Symbol(Context &ctx, const std::string &name) : AstNode(ctx), name_{name} {}
-
-  void accept(Visitor &visitor) const override;
-  inline TypeID get_type_code() const override;
-  inline hash_t compute_hash_() const override;
-  bool is_equal(const Comparable &o) const override;
-  int compare_(const Comparable &o) const override;
-};
-
 class LTLfFormula : public AstNode {
 public:
   explicit LTLfFormula(Context &c) : AstNode(c) {}
@@ -97,10 +82,12 @@ public:
 
 class LTLfAtom : public LTLfFormula {
 public:
-  const std::string name;
+  const ast_ptr symbol;
   const static TypeID type_code_id = TypeID::t_LTLfAtom;
   LTLfAtom(Context &ctx, const std::string &name)
-      : LTLfFormula(ctx), name{name} {}
+      : LTLfFormula(ctx), symbol{ctx.make_string_symbol(name)} {}
+  LTLfAtom(Context &ctx, const ast_ptr &symbol)
+      : LTLfFormula(ctx), symbol{symbol} {}
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -336,18 +323,13 @@ inline bool is_propositional(const ltlf_ptr &arg) {
          is_a<LTLfPropFalse>(*arg);
 }
 
-inline hash_t Symbol::compute_hash_() const {
-  hash_t result = get_type_code();
-  hash_combine(result, name_);
-  return result;
-}
 inline hash_t LTLfTrue::compute_hash_() const { return type_code_id; }
 inline hash_t LTLfFalse::compute_hash_() const { return type_code_id; }
 inline hash_t LTLfPropTrue::compute_hash_() const { return type_code_id; }
 inline hash_t LTLfPropFalse::compute_hash_() const { return type_code_id; }
 inline hash_t LTLfAtom::compute_hash_() const {
   hash_t result = type_code_id;
-  hash_combine(result, name);
+  hash_combine(result, *symbol);
   return result;
 }
 inline hash_t LTLfUnaryOp::compute_hash_() const {
@@ -366,7 +348,6 @@ inline hash_t LTLfBinaryOp::compute_hash_() const {
   return result;
 }
 
-inline TypeID Symbol::get_type_code() const { return TypeID::t_Symbol; }
 inline TypeID LTLfTrue::get_type_code() const { return TypeID::t_LTLfTrue; }
 inline TypeID LTLfFalse::get_type_code() const { return TypeID::t_LTLfFalse; }
 inline TypeID LTLfPropTrue::get_type_code() const {
@@ -402,6 +383,7 @@ inline TypeID LTLfEventually::get_type_code() const {
 }
 inline TypeID LTLfAlways::get_type_code() const { return TypeID::t_LTLfAlways; }
 
+ltlf_ptr simplify(const LTLfNot &);
 ltlf_ptr simplify(const LTLfImplies &);
 ltlf_ptr simplify(const LTLfEquivalent &);
 ltlf_ptr simplify(const LTLfXor &);

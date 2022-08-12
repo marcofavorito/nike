@@ -22,19 +22,6 @@
 namespace nike {
 namespace logic {
 
-bool Symbol::is_equal(const Comparable &o) const {
-  if (is_a<Symbol>(o))
-    return name_ == dynamic_cast<const Symbol &>(o).name_;
-  return false;
-}
-int Symbol::compare_(const Comparable &o) const {
-  assert(is_a<Symbol>(o));
-  const auto &s = dynamic_cast<const Symbol &>(o);
-  if (name_ == s.name_)
-    return 0;
-  return name_ < s.name_ ? -1 : 1;
-}
-
 bool LTLfTrue::is_equal(const Comparable &o) const { return is_a<LTLfTrue>(o); }
 int LTLfTrue::compare_(const Comparable &o) const {
   assert(is_a<LTLfTrue>(o));
@@ -66,12 +53,13 @@ int LTLfPropFalse::compare_(const Comparable &o) const {
 }
 
 bool LTLfAtom::is_equal(const Comparable &o) const {
-  return is_a<LTLfAtom>(o) and name == dynamic_cast<const LTLfAtom &>(o).name;
+  return is_a<LTLfAtom>(o) and
+         symbol == dynamic_cast<const LTLfAtom &>(o).symbol;
 }
 int LTLfAtom::compare_(const Comparable &o) const {
   assert(is_a<LTLfAtom>(o));
-  auto n1 = this->name;
-  auto n2 = dynamic_cast<const LTLfAtom &>(o).name;
+  auto n1 = this->symbol;
+  auto n2 = dynamic_cast<const LTLfAtom &>(o).symbol;
   return n1 == n2 ? 0 : n1 < n2 ? -1 : 1;
 }
 
@@ -96,6 +84,19 @@ int LTLfBinaryOp::compare_(const Comparable &o) const {
                                 dynamic_cast<const LTLfBinaryOp &>(o).args);
 }
 
+ltlf_ptr simplify(const LTLfNot &formula) {
+  if (is_a<LTLfTrue>(*formula.arg)) {
+    return formula.ctx().make_ff();
+  }
+  if (is_a<LTLfFalse>(*formula.arg) || is_a<LTLfPropFalse>(*formula.arg)) {
+    return formula.ctx().make_tt();
+  }
+  if (is_a<LTLfPropTrue>(*formula.arg)) {
+    return formula.ctx().make_end();
+  }
+  return std::static_pointer_cast<const LTLfFormula>(
+      formula.shared_from_this());
+}
 ltlf_ptr simplify(const LTLfImplies &formula) {
   auto new_container = vec_ptr(formula.args.size());
   std::transform(
@@ -123,7 +124,7 @@ ltlf_ptr simplify(const LTLfXor &formula) {
   return formula.ctx().make_and({some_positive, some_negative});
 }
 
-void Symbol::accept(Visitor &visitor) const {}
+void StringSymbol::accept(Visitor &visitor) const { visitor.visit(*this); }
 void LTLfTrue::accept(Visitor &visitor) const { visitor.visit(*this); }
 void LTLfFalse::accept(Visitor &visitor) const { visitor.visit(*this); }
 void LTLfPropTrue::accept(Visitor &visitor) const { visitor.visit(*this); }

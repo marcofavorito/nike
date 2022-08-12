@@ -33,7 +33,7 @@ class Context;
 class AstNode : public Visitable,
                 public Hashable,
                 public Comparable,
-                public std::enable_shared_from_this<const LTLfFormula> {
+                public std::enable_shared_from_this<const AstNode> {
 private:
   Context *m_ctx_;
 
@@ -45,20 +45,37 @@ public:
   };
 };
 
+class StringSymbol : public AstNode {
+public:
+  const std::string name;
+  const static TypeID type_code_id = TypeID::t_StringSymbol;
+  StringSymbol(Context &ctx, const std::string &name)
+      : AstNode(ctx), name{name} {}
+
+  void accept(Visitor &visitor) const override;
+  inline TypeID get_type_code() const override;
+  inline hash_t compute_hash_() const override;
+  bool is_equal(const Comparable &o) const override;
+  int compare_(const Comparable &o) const override;
+};
+
 class Context {
 private:
   std::unique_ptr<HashTable> table_;
 
   ltlf_ptr tt;
   ltlf_ptr ff;
-  ltlf_ptr true_;
-  ltlf_ptr false_;
+  ltlf_ptr prop_true;
+  ltlf_ptr prop_false;
   ltlf_ptr end;
   ltlf_ptr not_end;
   ltlf_ptr last;
+  pl_ptr true_;
+  pl_ptr false_;
 
 public:
   Context();
+  ast_ptr make_string_symbol(const std::string &);
   ltlf_ptr make_tt();
   ltlf_ptr make_ff();
   ltlf_ptr make_prop_true();
@@ -67,7 +84,8 @@ public:
   ltlf_ptr make_not_end();
   ltlf_ptr make_last();
   ltlf_ptr make_bool(bool value);
-  atom_ptr make_atom(const std::string &name);
+  ltlf_ptr make_atom(const std::string &name);
+  ltlf_ptr make_atom(const ast_ptr &symbol);
   ltlf_ptr make_not(const ltlf_ptr &arg);
   ltlf_ptr make_prop_not(const ltlf_ptr &arg);
   ltlf_ptr make_not_unified(const ltlf_ptr &arg);
@@ -82,14 +100,21 @@ public:
   ltlf_ptr make_release(const vec_ptr &args);
   ltlf_ptr make_eventually(const ltlf_ptr &args);
   ltlf_ptr make_always(const ltlf_ptr &args);
+
+  pl_ptr make_prop_bool(bool value);
+  pl_ptr make_true();
+  pl_ptr make_false();
+  pl_ptr make_literal(const ast_ptr &symbol, bool negated);
+  pl_ptr make_prop_and(const vec_pl_ptr &args);
+  pl_ptr make_prop_or(const vec_pl_ptr &arg);
 };
 
 template <typename T, typename caller, typename True, typename False,
-          typename Not, typename And, typename Or>
+          typename And, typename Or>
 std::shared_ptr<T>
-and_or(Context &context, const vec_ptr &s, bool op_x_notx,
-       std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
-  set_ptr args;
+and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
+       bool op_x_notx, std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
+  std::set<std::shared_ptr<const T>, utils::Deref::Less> args;
   for (auto &a : s) {
     // handle the case when a subformula is true
     if (is_a<True>(*a)) {
@@ -120,6 +145,15 @@ and_or(Context &context, const vec_ptr &s, bool op_x_notx,
   if (args.empty())
     return (context.*fun_ptr)(not op_x_notx);
   return std::make_shared<caller>(context, args);
+}
+
+inline TypeID StringSymbol::get_type_code() const {
+  return TypeID::t_StringSymbol;
+}
+inline hash_t StringSymbol::compute_hash_() const {
+  hash_t result = get_type_code();
+  hash_combine(result, name);
+  return result;
 }
 
 } // namespace logic

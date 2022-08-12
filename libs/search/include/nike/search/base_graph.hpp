@@ -33,15 +33,36 @@ public:
   SearchNode(node_id_t nodeId, State state) : nodeId{nodeId}, state{state} {}
 };
 
-template <typename State, typename Action,
-          typename EquivalenceCheck = std::equal_to<State>>
-class BaseSearchGraph {
+class SearchGraph {
 private:
   struct c_unique {
     node_id_t current;
     c_unique() { current = 0; }
     node_id_t operator()() { return current++; }
   } UniqueNumber;
+
+  std::map<node_id_t, SearchNode<State> *> idToNode;
+  std::map<node_id_t, SearchNode<State> *> stateToNode;
+
+  std::map<node_id_t, std::map<Action, node_id_t>> transitions;
+  // backward transitions might be non-deterministic
+  std::map<Node, std::map<size_t, std::set<Node>>> backward_transitions;
+
+  std::map<SddSize, SddNode *> action_by_id;
+  static void insert_with_default_(std::map<Node, std::map<size_t, Node>> &m,
+                                   Node start, size_t action, Node end);
+  static void insert_backward_with_default_(
+      std::map<Node, std::map<size_t, std::set<Node>>> &m, Node start,
+      size_t action, Node end);
+  template <typename K, typename V>
+  static std::map<K, V> get_or_empty_(const std::map<Node, std::map<K, V>> &m,
+                                      Node key) {
+    auto item_or_end = m.find(key);
+    if (item_or_end == m.end()) {
+      return {};
+    }
+    return item_or_end->second;
+  }
 
 public:
   const State initialState_;

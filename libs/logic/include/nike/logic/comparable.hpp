@@ -28,6 +28,7 @@ namespace logic {
 // compilers.
 enum TypeID {
   t_Symbol,
+  t_StringSymbol,
   t_LTLfTrue,
   t_LTLfFalse,
   t_LTLfPropTrue,
@@ -46,6 +47,11 @@ enum TypeID {
   t_LTLfRelease,
   t_LTLfEventually,
   t_LTLfAlways,
+  t_PLTrue,
+  t_PLFalse,
+  t_PLLiteral,
+  t_PLAnd,
+  t_PLOr,
 };
 
 /*

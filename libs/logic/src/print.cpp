@@ -25,12 +25,19 @@ void PrintVisitor::visit(const LTLfTrue &formula) { result = "tt"; }
 void PrintVisitor::visit(const LTLfFalse &formula) { result = "ff"; }
 void PrintVisitor::visit(const LTLfPropTrue &formula) { result = "true"; }
 void PrintVisitor::visit(const LTLfPropFalse &formula) { result = "false"; }
-void PrintVisitor::visit(const LTLfAtom &formula) { result = formula.name; }
+void PrintVisitor::visit(const LTLfAtom &formula) {
+  if (is_a<StringSymbol>(*formula.symbol)) {
+    result = std::static_pointer_cast<const StringSymbol>(formula.symbol)->name;
+    return;
+  }
+  // TODO process non-string symbol recursively...
+  assert(false);
+}
 void PrintVisitor::visit(const LTLfNot &formula) {
   unary_op_to_string(formula, "~");
 }
 void PrintVisitor::visit(const LTLfPropositionalNot &formula) {
-  result = "!" + formula.get_atom()->name;
+  result = "!" + apply(*formula.get_atom());
 }
 void PrintVisitor::visit(const LTLfAnd &formula) {
   binary_op_to_string(formula, "&");

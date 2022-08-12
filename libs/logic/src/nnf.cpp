@@ -23,23 +23,28 @@ namespace nike {
 namespace logic {
 
 void NNFTransformer::visit(const LTLfTrue &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfFalse &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfPropTrue &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfPropFalse &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfAtom &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfNot &formula) {
@@ -47,7 +52,8 @@ void NNFTransformer::visit(const LTLfNot &formula) {
 }
 
 void NNFTransformer::visit(const LTLfPropositionalNot &formula) {
-  result = formula.shared_from_this();
+  result =
+      std::static_pointer_cast<const LTLfFormula>(formula.shared_from_this());
 }
 
 void NNFTransformer::visit(const LTLfAnd &formula) {

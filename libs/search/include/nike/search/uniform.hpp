@@ -16,6 +16,24 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "base_graph.hpp"
+#include <queue>
+#include <set>
+
 namespace nike {
-namespace search {}
+namespace search {
+
+template <typename State, typename Action, typename Graph,
+          typename std::enable_if<std::is_base_of<
+              BaseSearchGraph<State, Action>, Graph>::value>::type>
+void uniform_cost(BaseSearchGraph<State, Action> &graph) {
+  auto queue = std::queue<State>();
+  auto visited = std::set<node_id_t>();
+
+  auto initialNode = graph.initialNode_;
+  queue.push(initialNode);
+  visited.insert(initialNode.nodeId);
+}
+
+} // namespace search
 } // namespace nike

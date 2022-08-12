@@ -17,6 +17,7 @@
 
 #include <nike/logic/base.hpp>
 #include <nike/logic/ltlf.hpp>
+#include <nike/logic/pl.hpp>
 #include <stdexcept>
 
 // TODO instead of make_shared, use "signature" of object to instantiate
@@ -24,6 +25,20 @@
 
 namespace nike {
 namespace logic {
+
+bool StringSymbol::is_equal(const Comparable &o) const {
+  if (is_a<StringSymbol>(o))
+    return name == dynamic_cast<const StringSymbol &>(o).name;
+  return false;
+}
+int StringSymbol::compare_(const Comparable &o) const {
+  assert(is_a<StringSymbol>(o));
+  const auto &s = dynamic_cast<const StringSymbol &>(o);
+  if (name == s.name)
+    return 0;
+  return name < s.name ? -1 : 1;
+}
+
 Context::Context() {
   table_ = utils::make_unique<HashTable>();
 
@@ -33,11 +48,11 @@ Context::Context() {
   ff = std::make_shared<const LTLfFalse>(*this);
   table_->insert_if_not_available(ff);
 
-  true_ = std::make_shared<const LTLfPropTrue>(*this);
-  table_->insert_if_not_available(true_);
+  prop_true = std::make_shared<const LTLfPropTrue>(*this);
+  table_->insert_if_not_available(prop_true);
 
-  false_ = std::make_shared<const LTLfPropFalse>(*this);
-  table_->insert_if_not_available(false_);
+  prop_false = std::make_shared<const LTLfPropFalse>(*this);
+  table_->insert_if_not_available(prop_false);
 
   end = std::make_shared<const LTLfAlways>(*this, ff);
   table_->insert_if_not_available(end);
@@ -47,21 +62,36 @@ Context::Context() {
 
   last = std::make_shared<const LTLfWeakNext>(*this, ff);
   table_->insert_if_not_available(last);
+
+  true_ = std::make_shared<const PLTrue>(*this);
+  table_->insert_if_not_available(true_);
+
+  false_ = std::make_shared<const PLFalse>(*this);
+  table_->insert_if_not_available(false_);
 }
 
 ltlf_ptr Context::make_tt() { return tt; }
 ltlf_ptr Context::make_ff() { return ff; }
-ltlf_ptr Context::make_prop_true() { return true_; }
-ltlf_ptr Context::make_prop_false() { return false_; }
+ltlf_ptr Context::make_prop_true() { return prop_true; }
+ltlf_ptr Context::make_prop_false() { return prop_false; }
 ltlf_ptr Context::make_end() { return end; }
 ltlf_ptr Context::make_not_end() { return not_end; }
 ltlf_ptr Context::make_last() { return last; }
 ltlf_ptr Context::make_bool(bool value) {
   return value ? make_tt() : make_ff();
 }
+pl_ptr Context::make_prop_bool(bool value) {
+  return value ? make_true() : make_false();
+}
 
-atom_ptr Context::make_atom(const std::string &name) {
+ltlf_ptr Context::make_atom(const std::string &name) {
   auto atom = std::make_shared<const LTLfAtom>(*this, name);
+  auto actual_atom = table_->insert_if_not_available(atom);
+  return actual_atom;
+}
+
+ltlf_ptr Context::make_atom(const ast_ptr &symbol) {
+  auto atom = std::make_shared<const LTLfAtom>(*this, symbol);
   auto actual_atom = table_->insert_if_not_available(atom);
   return actual_atom;
 }
@@ -94,16 +124,18 @@ ltlf_ptr Context::make_prop_not(const ltlf_ptr &arg) {
 
 ltlf_ptr Context::make_and(const vec_ptr &args) {
   ltlf_ptr (Context::*fun)(bool) = &Context::make_bool;
-  auto tmp = and_or<const LTLfFormula, LTLfAnd, LTLfTrue, LTLfFalse, LTLfNot,
-                    LTLfAnd, LTLfOr>(*this, args, false, fun);
+  auto tmp =
+      and_or<const LTLfFormula, LTLfAnd, LTLfTrue, LTLfFalse, LTLfAnd, LTLfOr>(
+          *this, args, false, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
 }
 
 ltlf_ptr Context::make_or(const vec_ptr &args) {
   ltlf_ptr (Context::*fun)(bool) = &Context::make_bool;
-  auto tmp = and_or<const LTLfFormula, LTLfOr, LTLfTrue, LTLfFalse, LTLfNot,
-                    LTLfAnd, LTLfOr>(*this, args, true, fun);
+  auto tmp =
+      and_or<const LTLfFormula, LTLfOr, LTLfTrue, LTLfFalse, LTLfAnd, LTLfOr>(
+          *this, args, true, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
 }
@@ -159,6 +191,34 @@ ltlf_ptr Context::make_eventually(const ltlf_ptr &arg) {
 ltlf_ptr Context::make_always(const ltlf_ptr &arg) {
   auto always = std::make_shared<const LTLfAlways>(*this, arg);
   auto actual = table_->insert_if_not_available(always);
+  return actual;
+}
+
+ast_ptr Context::make_string_symbol(const std::string &arg) {
+  auto stringSymbol = std::make_shared<const StringSymbol>(*this, arg);
+  auto actual = table_->insert_if_not_available(stringSymbol);
+  return actual;
+}
+
+pl_ptr Context::make_true() { return true_; }
+pl_ptr Context::make_false() { return false_; }
+pl_ptr Context::make_literal(const ast_ptr &symbol, bool negated) {
+  auto literal = std::make_shared<const PLLiteral>(*this, symbol, negated);
+  auto actual = table_->insert_if_not_available(literal);
+  return literal;
+}
+pl_ptr Context::make_prop_and(const vec_pl_ptr &args) {
+  pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
+  auto tmp = and_or<const PLFormula, PLAnd, PLTrue, PLFalse, PLAnd, PLOr>(
+      *this, args, false, fun);
+  auto actual = table_->insert_if_not_available(tmp);
+  return actual;
+}
+pl_ptr Context::make_prop_or(const vec_pl_ptr &args) {
+  pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
+  auto tmp = and_or<const PLFormula, PLOr, PLTrue, PLFalse, PLAnd, PLOr>(
+      *this, args, true, fun);
+  auto actual = table_->insert_if_not_available(tmp);
   return actual;
 }
 

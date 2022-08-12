@@ -26,14 +26,18 @@
 namespace nike {
 namespace logic {
 class AstNode;
+class PLFormula;
 class LTLfFormula;
 class LTLfAtom;
 
 typedef std::size_t hash_t;
 typedef std::shared_ptr<const AstNode> ast_ptr;
+typedef std::shared_ptr<const PLFormula> pl_ptr;
 typedef std::shared_ptr<const LTLfFormula> ltlf_ptr;
 typedef std::shared_ptr<const LTLfAtom> atom_ptr;
+typedef std::vector<pl_ptr> vec_pl_ptr;
 typedef std::vector<ltlf_ptr> vec_ptr;
+typedef std::set<pl_ptr, utils::Deref::Less> set_pl_ptr;
 typedef std::set<ltlf_ptr, utils::Deref::Less> set_ptr;
 typedef std::set<atom_ptr, utils::Deref::Less> set_atoms_ptr;
 typedef std::map<ltlf_ptr, size_t, utils::Deref::Less> map_ptr;
