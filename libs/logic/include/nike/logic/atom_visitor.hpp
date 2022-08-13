@@ -24,9 +24,15 @@ namespace logic {
 
 class AtomsVisitor : public Visitor {
 protected:
-  set_atoms_ptr result;
+  set_ast_ptr result;
 
 public:
+  void visit(const PLTrue &) override;
+  void visit(const PLFalse &) override;
+  void visit(const PLLiteral &) override;
+  void visit(const PLAnd &) override;
+  void visit(const PLOr &) override;
+
   void visit(const LTLfTrue &) override;
   void visit(const LTLfFalse &) override;
   void visit(const LTLfPropTrue &) override;
@@ -46,12 +52,14 @@ public:
   void visit(const LTLfEventually &) override;
   void visit(const LTLfAlways &) override;
 
-  set_atoms_ptr apply(const LTLfFormula &b);
+  set_ast_ptr apply(const LTLfFormula &b);
+  set_ast_ptr apply(const PLFormula &b);
   void visit_binary_op(const LTLfBinaryOp &f);
   void visit_unary_op(const LTLfUnaryOp &f);
 };
 
-set_atoms_ptr find_atoms(const LTLfFormula &);
+set_ast_ptr find_atoms(const LTLfFormula &);
+set_ast_ptr find_atoms(const PLFormula &);
 
 } // namespace logic
 } // namespace nike

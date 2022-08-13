@@ -104,10 +104,6 @@ inline bool ClosureVisitor::insert_if_not_already_present_(
 
 inline void
 ClosureVisitor::apply_to_binary_op_(const logic::LTLfBinaryOp &formula) {
-  auto result = insert_if_not_already_present_(formula);
-  if (!result)
-    return;
-
   for (const auto &arg : formula.args) {
     apply(*arg);
   }

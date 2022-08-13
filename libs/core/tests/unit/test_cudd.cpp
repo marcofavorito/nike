@@ -17,6 +17,7 @@
 
 #include <catch.hpp>
 #include <cuddObj.hh>
+#include <map>
 
 namespace nike {
 namespace logic {
@@ -37,6 +38,50 @@ TEST_CASE("check exist", "[core][cudd]") {
   REQUIRE(result_or.IsOne());
   REQUIRE(result_x.IsOne());
   REQUIRE(result_and == y);
+}
+TEST_CASE("test zdd", "[core][cudd]") {
+  CUDD::Cudd mgr;
+
+  CUDD::ZDD x = mgr.zddVar(0);
+  CUDD::ZDD y = mgr.zddVar(1);
+
+  CUDD::ZDD result_and = x & y;
+  CUDD::ZDD result_or = x | y;
+  CUDD::ZDD result_x = x & x;
+  CUDD::ZDD result_y = y & y;
+
+  auto zddMap = std::map<DdNode *, int>({
+      {x.getNode(), 0},
+      {y.getNode(), 1},
+      {x.getNode(), 2},
+  });
+  REQUIRE(zddMap.size() == 2);
+}
+TEST_CASE("test zdd one", "[core][cudd]") {
+  CUDD::Cudd mgr(0, 3);
+
+  CUDD::ZDD x = mgr.zddVar(0);
+  CUDD::ZDD y = mgr.zddVar(1);
+  CUDD::ZDD z = mgr.zddVar(2);
+
+  CUDD::ZDD zero = mgr.zddZero();
+
+  CUDD::ZDD all1 = mgr.zddOne(3);
+  CUDD::ZDD xyz1 = all1 & x & y & z;
+  REQUIRE(xyz1 != all1);
+  REQUIRE(xyz1 != zero);
+
+  CUDD::ZDD all2 = mgr.zddOne(3 - 1);
+  CUDD::ZDD xyz2 = all2 & x & y & z;
+  REQUIRE(xyz1 == xyz2);
+  REQUIRE(xyz2 != all2);
+  REQUIRE(xyz2 != zero);
+
+  CUDD::ZDD all3 = mgr.zddOne(3 - 2);
+  CUDD::ZDD xyz3 = all2 & x & y & z;
+  REQUIRE(xyz1 == xyz3);
+  REQUIRE(xyz3 != all3);
+  REQUIRE(xyz3 != zero);
 }
 
 } // namespace Test

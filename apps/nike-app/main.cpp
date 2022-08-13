@@ -22,8 +22,10 @@
 
 int main(int argc, char **argv) {
 
-  std::string formula = "x";
+  //  std::string formula = "X[!](x & a)";
+  std::string formula = "(x | a) & (X[!](x | a))";
   std::string part_file = "ignore/part.part";
+  nike::utils::Logger::level(nike::utils::LogLevel::debug);
   auto driver = nike::parser::ltlf::LTLfDriver();
   std::stringstream formula_stream(formula);
   driver.parse(formula_stream);

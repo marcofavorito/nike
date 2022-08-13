@@ -16,22 +16,19 @@
  * along with Lydia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <nike/logic/ltlf.hpp>
-#include <nike/logic/visitor.hpp>
+#include "nike/logic/ltlf.hpp"
+#include "nike/logic/visitor.hpp"
 #include <utility>
 
 namespace nike {
 namespace logic {
 
-class ReplaceVisitor : public Visitor {
+class ToLTLfVisitor : public Visitor {
 private:
-  pl_ptr result;
-  std::map<ast_ptr, bool, utils::Deref::Less> replacements;
+  ltlf_ptr result;
 
 public:
-  explicit ReplaceVisitor(
-      std::map<ast_ptr, bool, utils::Deref::Less> replacements)
-      : replacements{std::move(replacements)} {}
+  ToLTLfVisitor() {}
 
   void visit(const PLTrue &) override;
   void visit(const PLFalse &) override;
@@ -39,11 +36,10 @@ public:
   void visit(const PLAnd &) override;
   void visit(const PLOr &) override;
 
-  pl_ptr apply(const PLFormula &b);
+  ltlf_ptr apply(const PLFormula &b);
 };
 
-pl_ptr replace(std::map<ast_ptr, bool, utils::Deref::Less> replacements,
-               const PLFormula &formula);
+ltlf_ptr to_ltlf(const PLFormula &formula);
 
 } // namespace logic
 } // namespace nike

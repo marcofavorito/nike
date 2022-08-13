@@ -38,7 +38,7 @@ bool PLLiteral::is_equal(const Comparable &o) const {
          proposition == dynamic_cast<const PLLiteral &>(o).proposition;
 }
 int PLLiteral::compare_(const Comparable &o) const {
-  assert(is_a<LTLfAtom>(o));
+  assert(is_a<PLLiteral>(o));
   auto negated1 = negated;
   auto negated2 = dynamic_cast<const PLLiteral &>(o).negated;
   if (negated1 != negated2) {

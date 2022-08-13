@@ -16,23 +16,24 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstddef>
 #include <set>
 #include <stack>
 
 namespace nike {
 namespace core {
-//
-// class Path {
-// private:
-//  std::stack<size_t> path;
-//  std::set<size_t> node_set;
-//
-// public:
-//  void push(size_t node);
-//  size_t pop();
-//  size_t back();
-//  bool contains(size_t);
-//};
+
+class Path {
+private:
+  std::stack<size_t> path;
+  std::set<size_t> node_set;
+
+public:
+  void push(size_t node);
+  size_t pop();
+  size_t back();
+  bool contains(size_t);
+};
 
 } // namespace core
 } // namespace nike

@@ -131,7 +131,7 @@ bool one_step_unrealizability(const logic::LTLfFormula &f,
   }
 
   auto varToQuantify = visitor.controllablesConj;
-  auto quantified = (!result).UnivAbstract(visitor.controllablesConj);
+  auto quantified = result.ExistAbstract(visitor.controllablesConj);
 
   if (quantified.IsOne()) {
     return false;

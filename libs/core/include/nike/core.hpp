@@ -16,6 +16,7 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cuddObj.hh>
 #include <nike/closure.hpp>
 #include <nike/graph.hpp>
 #include <nike/input_output_partition.hpp>
@@ -27,7 +28,7 @@
 namespace nike {
 namespace core {
 
-typedef std::map<unsigned long long, void *> strategy_t;
+typedef std::map<long, move_t> strategy_t;
 
 class ISynthesis {
 public:
@@ -58,20 +59,25 @@ public:
     logic::ltlf_ptr nnf_formula;
     logic::ltlf_ptr xnf_formula;
     Closure closure_;
+    CUDD::Cudd manager_;
     Statistics statistics_;
     Graph graph;
     std::map<std::string, size_t> prop_to_id;
-    std::map<unsigned long long, bool> discovered;
-    std::set<unsigned long long> loop_tags;
-    std::map<unsigned long long, void *> winning_moves;
-    std::map<unsigned long long, logic::ltlf_ptr> sdd_node_id_to_formula;
-    std::map<logic::ltlf_ptr, void *> formula_to_sdd_node;
+    std::map<long, bool> discovered;
+    std::set<long> loop_tags;
+    std::map<long, move_t> winning_moves;
+    std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
+    std::map<logic::ltlf_ptr, CUDD::ZDD> formula_to_zdd_node;
     utils::Logger logger;
     size_t indentation = 0;
     const bool use_gc;
     const float gc_threshold;
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
+    move_t trueSystemMove;
+    move_t falseSystemMove;
+    move_t trueEnvMove;
+    move_t falseEnvMove;
     Context(const logic::ltlf_ptr &formula,
             const InputOutputPartition &partition, bool use_gc = false,
             float gc_threshold = 0.95);
@@ -82,11 +88,11 @@ public:
     template <typename Arg1, typename... Args>
     inline void print_search_debug(const char *fmt, const Arg1 &arg1,
                                    const Args &...args) const {
-      logger.debug((std::string(indentation, '\t') + fmt).c_str(), arg1,
-                   args...);
+      logger.info((std::string(indentation, '\t') + fmt).c_str(), arg1,
+                  args...);
     };
     inline void print_search_debug(const char *fmt) const {
-      logger.debug((std::string(indentation, '\t') + fmt).c_str());
+      logger.info((std::string(indentation, '\t') + fmt).c_str());
     };
 
     void initialie_maps_();
@@ -104,17 +110,22 @@ public:
 
   bool forward_synthesis_();
 
+  long get_zdd_id(CUDD::ZDD node) {
+    return reinterpret_cast<std::intptr_t>(node.getNode());
+  }
+
 private:
   Context context_;
-  //  strategy_t system_move_(const logic::ltlf_ptr& formula, Path& path);
-  //  strategy_t env_move_(SddNodeWrapper& wrapper, Path& path);
+  bool system_move_(const logic::ltlf_ptr &formula, Path &path);
+  bool find_env_move_(const logic::pl_ptr &pl_formula, Path &path);
   //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
   //  SddNodeWrapper next_state_(const SddNodeWrapper& wrapper);
-  //  logic::ltlf_ptr next_state_formula_(void* wrapper);
+  logic::ltlf_ptr next_state_formula_(const logic::pl_ptr &pl_formula);
   //  SddNodeWrapper formula_to_sdd_(const logic::ltlf_ptr& formula);
   //  static NodeType node_type_from_sdd_type_(const SddNodeWrapper& wrapper);
   //  void add_transition_(const SddNodeWrapper& start, void* move_node,
   //                       const SddNodeWrapper& end);
+  bool find_system_move(const logic::pl_ptr &formula, Path &path);
 };
 
 } // namespace core

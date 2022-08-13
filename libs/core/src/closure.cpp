@@ -88,10 +88,10 @@ void ClosureVisitor::visit(const logic::LTLfOr &formula) {
   apply_to_binary_op_(formula);
 }
 void ClosureVisitor::visit(const logic::LTLfImplies &formula) {
-  apply_to_binary_op_(formula);
+  logic::throw_not_implemented_error();
 }
 void ClosureVisitor::visit(const logic::LTLfEquivalent &formula) {
-  apply_to_binary_op_(formula);
+  logic::throw_not_implemented_error();
 }
 void ClosureVisitor::visit(const logic::LTLfXor &formula) {
   apply_to_binary_op_(formula);

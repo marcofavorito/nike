@@ -21,14 +21,33 @@
 namespace nike {
 namespace logic {
 
-void AtomsVisitor::visit(const LTLfTrue &f) { result = set_atoms_ptr{}; }
-void AtomsVisitor::visit(const LTLfFalse &f) { result = set_atoms_ptr{}; }
-void AtomsVisitor::visit(const LTLfPropTrue &f) { result = set_atoms_ptr{}; }
-void AtomsVisitor::visit(const LTLfPropFalse &f) { result = set_atoms_ptr{}; }
-void AtomsVisitor::visit(const LTLfAtom &f) {
-  result = set_atoms_ptr{
-      std::static_pointer_cast<const LTLfAtom>(f.shared_from_this())};
+void AtomsVisitor::visit(const PLTrue &) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const PLFalse &) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const PLLiteral &f) {
+  result = set_ast_ptr{f.proposition};
 }
+void AtomsVisitor::visit(const PLAnd &f) {
+  set_ast_ptr atoms_result, tmp;
+  for (auto &a : f.args) {
+    tmp = apply(*a);
+    atoms_result.insert(tmp.begin(), tmp.end());
+  }
+  result = atoms_result;
+}
+void AtomsVisitor::visit(const PLOr &f) {
+  set_ast_ptr atoms_result, tmp;
+  for (auto &a : f.args) {
+    tmp = apply(*a);
+    atoms_result.insert(tmp.begin(), tmp.end());
+  }
+  result = atoms_result;
+}
+
+void AtomsVisitor::visit(const LTLfTrue &f) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const LTLfFalse &f) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const LTLfPropTrue &f) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const LTLfPropFalse &f) { result = set_ast_ptr{}; }
+void AtomsVisitor::visit(const LTLfAtom &f) { result = set_ast_ptr{f.symbol}; }
 void AtomsVisitor::visit(const LTLfNot &f) { visit_unary_op(f); }
 void AtomsVisitor::visit(const LTLfPropositionalNot &f) { visit_unary_op(f); }
 void AtomsVisitor::visit(const LTLfAnd &f) { visit_binary_op(f); }
@@ -44,7 +63,7 @@ void AtomsVisitor::visit(const LTLfEventually &f) { visit_unary_op(f); }
 void AtomsVisitor::visit(const LTLfAlways &f) { visit_unary_op(f); }
 
 void AtomsVisitor::visit_binary_op(const LTLfBinaryOp &f) {
-  set_atoms_ptr atoms_result, tmp;
+  set_ast_ptr atoms_result, tmp;
   for (auto &a : f.args) {
     tmp = apply(*a);
     atoms_result.insert(tmp.begin(), tmp.end());
@@ -56,12 +75,20 @@ void AtomsVisitor::visit_unary_op(const LTLfUnaryOp &f) {
   result = apply(*f.arg);
 }
 
-set_atoms_ptr AtomsVisitor::apply(const LTLfFormula &b) {
+set_ast_ptr AtomsVisitor::apply(const LTLfFormula &b) {
+  b.accept(*this);
+  return result;
+}
+set_ast_ptr AtomsVisitor::apply(const PLFormula &b) {
   b.accept(*this);
   return result;
 }
 
-set_atoms_ptr find_atoms(const LTLfFormula &f) {
+set_ast_ptr find_atoms(const LTLfFormula &f) {
+  AtomsVisitor atomsVisitor;
+  return atomsVisitor.apply(f);
+}
+set_ast_ptr find_atoms(const PLFormula &f) {
   AtomsVisitor atomsVisitor;
   return atomsVisitor.apply(f);
 }

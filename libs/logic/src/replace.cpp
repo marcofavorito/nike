@@ -26,11 +26,9 @@ namespace logic {
 void ReplaceVisitor::visit(const PLTrue &f) { result = f.ctx().make_true(); }
 void ReplaceVisitor::visit(const PLFalse &f) { result = f.ctx().make_false(); }
 void ReplaceVisitor::visit(const PLLiteral &f) {
-  auto literal =
-      std::static_pointer_cast<const PLFormula>(f.shared_from_this());
-  auto replacement = replacements.find(literal);
+  auto replacement = replacements.find(f.proposition);
   if (replacement == replacements.end()) {
-    result = literal;
+    result = std::static_pointer_cast<const PLFormula>(f.shared_from_this());
     return;
   }
 
@@ -57,7 +55,7 @@ pl_ptr ReplaceVisitor::apply(const PLFormula &b) {
   return result;
 }
 
-pl_ptr replace(std::map<pl_ptr, bool, utils::Deref::Less> replacements,
+pl_ptr replace(std::map<ast_ptr, bool, utils::Deref::Less> replacements,
                const PLFormula &formula) {
   ReplaceVisitor visitor{std::move(replacements)};
   return visitor.apply(formula);

@@ -145,8 +145,8 @@ public:
   inline TypeID get_type_code() const override;
 };
 
-inline TypeID PLTrue::get_type_code() const { return TypeID::t_PLFalse; }
-inline TypeID PLFalse::get_type_code() const { return TypeID::t_PLTrue; }
+inline TypeID PLTrue::get_type_code() const { return TypeID::t_PLTrue; }
+inline TypeID PLFalse::get_type_code() const { return TypeID::t_PLFalse; }
 inline TypeID PLLiteral::get_type_code() const { return TypeID::t_PLLiteral; }
 inline TypeID PLAnd::get_type_code() const { return TypeID::t_PLAnd; }
 inline TypeID PLOr::get_type_code() const { return TypeID::t_PLOr; }
