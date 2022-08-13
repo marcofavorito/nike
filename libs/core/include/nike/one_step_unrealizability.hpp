@@ -16,49 +16,48 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cuddObj.hh>
 #include <nike/core.hpp>
 #include <nike/logic/visitor.hpp>
 #include <optional>
 
 namespace nike {
 namespace core {
-//
-// class OneStepUnrealizabilityVisitor : public logic::Visitor {
-// public:
-//  ForwardSynthesis::Context& context_;
-//  SddNode* result{};
-//  explicit OneStepUnrealizabilityVisitor(ForwardSynthesis::Context& context)
-//      : context_{context} {}
-//  void visit(const logic::LTLfTrue&) override;
-//  void visit(const logic::LTLfFalse&) override;
-//  void visit(const logic::LTLfPropTrue&) override;
-//  void visit(const logic::LTLfPropFalse&) override;
-//  void visit(const logic::LTLfAtom&) override;
-//  void visit(const logic::LTLfNot&) override;
-//  void visit(const logic::LTLfPropositionalNot&) override;
-//  void visit(const logic::LTLfAnd&) override;
-//  void visit(const logic::LTLfOr&) override;
-//  void visit(const logic::LTLfImplies&) override;
-//  void visit(const logic::LTLfEquivalent&) override;
-//  void visit(const logic::LTLfXor&) override;
-//  void visit(const logic::LTLfNext&) override;
-//  void visit(const logic::LTLfWeakNext&) override;
-//  void visit(const logic::LTLfUntil&) override;
-//  void visit(const logic::LTLfRelease&) override;
-//  void visit(const logic::LTLfEventually&) override;
-//  void visit(const logic::LTLfAlways&) override;
-//
-//  SddNode* apply(const logic::LTLfFormula& f);
-//  inline SddNode* get_sdd_node(const logic::LTLfFormula& formula) const {
-//    auto formula_id =
-//    context_.closure_.get_id(formula.std::static_pointer_cast<const
-//    LTLfFormula>(formula.shared_from_this())); return
-//    sdd_manager_literal(formula_id + 1, context_.manager);
-//  }
-//};
-//
-// bool one_step_unrealizability(const logic::LTLfFormula& f,
-//                              ForwardSynthesis::Context& context);
+
+class OneStepUnrealizabilityVisitor : public logic::Visitor {
+public:
+  ForwardSynthesis::Context &context_;
+  CUDD::Cudd manager;
+  CUDD::BDD result;
+  std::map<logic::ast_ptr, int> propToId;
+  CUDD::BDD controllablesConj;
+  explicit OneStepUnrealizabilityVisitor(ForwardSynthesis::Context &context)
+      : context_{context}, manager{CUDD::Cudd()}, controllablesConj{
+                                                      manager.bddOne()} {}
+  void visit(const logic::LTLfTrue &) override;
+  void visit(const logic::LTLfFalse &) override;
+  void visit(const logic::LTLfPropTrue &) override;
+  void visit(const logic::LTLfPropFalse &) override;
+  void visit(const logic::LTLfAtom &) override;
+  void visit(const logic::LTLfNot &) override;
+  void visit(const logic::LTLfPropositionalNot &) override;
+  void visit(const logic::LTLfAnd &) override;
+  void visit(const logic::LTLfOr &) override;
+  void visit(const logic::LTLfImplies &) override;
+  void visit(const logic::LTLfEquivalent &) override;
+  void visit(const logic::LTLfXor &) override;
+  void visit(const logic::LTLfNext &) override;
+  void visit(const logic::LTLfWeakNext &) override;
+  void visit(const logic::LTLfUntil &) override;
+  void visit(const logic::LTLfRelease &) override;
+  void visit(const logic::LTLfEventually &) override;
+  void visit(const logic::LTLfAlways &) override;
+
+  CUDD::BDD apply(const logic::LTLfFormula &f);
+};
+
+bool one_step_unrealizability(const logic::LTLfFormula &f,
+                              ForwardSynthesis::Context &context);
 
 } // namespace core
 } // namespace nike

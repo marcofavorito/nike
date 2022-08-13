@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv) {
 
-  std::string formula = "F(x)";
+  std::string formula = "x";
   std::string part_file = "ignore/part.part";
   auto driver = nike::parser::ltlf::LTLfDriver();
   std::stringstream formula_stream(formula);

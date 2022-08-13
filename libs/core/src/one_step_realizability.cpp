@@ -39,7 +39,9 @@ void OneStepRealizabilityVisitor::visit(const logic::LTLfAtom &formula) {
     auto prop =
         std::static_pointer_cast<const logic::StringSymbol>(formula.symbol)
             ->name;
-    if (context_.prop_to_id.find(prop) != context_.prop_to_id.end()) {
+    if (std::find(context_.partition.output_variables.begin(),
+                  context_.partition.output_variables.end(),
+                  prop) != context_.partition.output_variables.end()) {
       controllable = true;
     }
   }
@@ -122,19 +124,12 @@ bool one_step_realizability(const logic::LTLfFormula &f,
     return true;
   }
 
-  //  result.Print
-
   auto varToQuantify = visitor.controllablesConj;
   auto quantified = result.ExistAbstract(visitor.controllablesConj);
 
   if (quantified.IsOne()) {
     return true;
   }
-
-  const std::vector<const char *> &inames = {};
-  FILE *fp = fopen("temp.dot", "w");
-  std::vector<CUDD::BDD> single({quantified});
-  visitor.manager.DumpDot(single, inames.data(), nullptr, fp);
 
   return false;
 }

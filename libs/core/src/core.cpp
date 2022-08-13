@@ -50,13 +50,13 @@ bool ForwardSynthesis::forward_synthesis_() {
     context_.logger.info("One-step realizability check successful");
     return true;
   }
-  //  context_.logger.info("Check one-step unrealizability");
-  //  auto is_unrealizable =
-  //      one_step_unrealizability(*context_.nnf_formula, context_);
-  //  if (!is_unrealizable) {
-  //    context_.logger.info("One-step unrealizability check successful");
-  //    return false;
-  //  }
+  context_.logger.info("Check one-step unrealizability");
+  auto is_unrealizable =
+      one_step_unrealizability(*context_.nnf_formula, context_);
+  if (is_unrealizable) {
+    context_.logger.info("One-step unrealizability check successful");
+    return false;
+  }
 
   context_.logger.info("Building the root SDD node...");
   //  auto root_sdd_node = to_sdd(*context_.xnf_formula, context_);
