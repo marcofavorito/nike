@@ -17,6 +17,7 @@
  */
 
 #include <cstddef>
+#include <nike/logic/pl.hpp>
 #include <set>
 
 namespace nike {
@@ -24,11 +25,11 @@ namespace core {
 
 class Statistics {
 private:
-  std::set<size_t> nodes;
+  std::set<logic::pl_ptr, utils::Deref::Less> nodes;
 
 public:
   size_t nb_visited_nodes() const;
-  void visit_node(size_t node_id);
+  void visit_node(logic::pl_ptr node_id);
 };
 
 } // namespace core

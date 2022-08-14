@@ -109,11 +109,91 @@ public:
   pl_ptr make_prop_or(const vec_pl_ptr &arg);
 };
 
+bool eval(const LTLfFormula &formula);
+
 template <typename T, typename caller, typename True, typename False,
           typename And, typename Or>
 std::shared_ptr<T>
 and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
        bool op_x_notx, std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
+  std::set<std::shared_ptr<const T>, utils::Deref::Less> args;
+  for (auto &a : s) {
+    // handle the case when a subformula is true
+    if (is_a<True>(*a)) {
+      if (op_x_notx)
+        return a;
+      else
+        continue;
+    }
+    // handle the case when a subformula is false
+    else if (is_a<False>(*a)) {
+      if (!op_x_notx)
+        return a;
+      else
+        continue;
+    }
+    // handle the case when a subformula is of the same type of the caller
+    else if (is_a<caller>(*a)) {
+      const auto &to_insert = dynamic_cast<const caller &>(*a);
+      const auto &container = to_insert.args;
+      args.insert(container.begin(), container.end());
+      continue;
+    } else {
+      args.insert(a);
+    }
+  }
+
+  if (args.size() == 1)
+    return *(args.begin());
+  if (args.empty())
+    return (context.*fun_ptr)(not op_x_notx);
+
+  // check not end
+  auto not_end = context.make_not_end();
+  auto not_end_it = args.find(not_end);
+  if (!op_x_notx and not_end_it != args.end()) {
+    bool not_accepting_empty_trace = false;
+    for (auto &a : args) {
+      if (a != not_end and !eval(*a)) {
+        not_accepting_empty_trace = true;
+        break;
+      }
+    }
+    if (not_accepting_empty_trace) {
+      // remove 'not_end'
+      args.erase(not_end);
+    }
+    if (args.size() == 1)
+      return *(args.begin());
+  }
+  // check end
+  auto end = context.make_end();
+  auto end_it = args.find(end);
+  if (op_x_notx and end_it != args.end()) {
+    bool accepting_empty_trace = false;
+    for (auto &a : args) {
+      if (a != end and eval(*a)) {
+        accepting_empty_trace = true;
+        break;
+      }
+    }
+    if (accepting_empty_trace) {
+      // remove 'end'
+      args.erase(end);
+    }
+    if (args.size() == 1)
+      return *(args.begin());
+  }
+
+  return std::make_shared<caller>(context, args);
+}
+
+template <typename T, typename caller, typename True, typename False,
+          typename And, typename Or>
+std::shared_ptr<T>
+and_or_prop(Context &context, const std::vector<std::shared_ptr<const T>> &s,
+            bool op_x_notx,
+            std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
   std::set<std::shared_ptr<const T>, utils::Deref::Less> args;
   for (auto &a : s) {
     // handle the case when a subformula is true

@@ -395,17 +395,18 @@ TEST_CASE("forward synthesis of 'p0 R (F(p1))'") {
     REQUIRE(!result);
   }
 }
-TEST_CASE("forward synthesis of '(X(F(~b))) U (G(a))'") {
+TEST_CASE("forward synthesis of 'F(~b) U G(a)'") {
+  utils::Logger logger("nike");
+  logger.level(nike::utils::LogLevel::debug);
   auto context = std::make_shared<logic::Context>();
   auto a = context->make_atom("a");
   auto b = context->make_atom("b");
   auto not_b = context->make_prop_not(b);
-  auto not_end = context->make_not(context->make_end());
-  auto always_a = context->make_eventually(a);
+  auto not_end = context->make_not_end();
+  auto always_a = context->make_always(a);
   auto eventually_not_b = context->make_eventually(not_b);
   auto next_eventually = context->make_weak_next(eventually_not_b);
-  auto until = context->make_until({next_eventually, always_a});
-  auto formula = context->make_and({until, not_end});
+  auto formula = context->make_and({next_eventually, not_end});
 
   SECTION("a controllable, b controllable") {
     auto partition = InputOutputPartition({"dummy"}, {"a", "b"});
@@ -427,6 +428,42 @@ TEST_CASE("forward synthesis of '(X(F(~b))) U (G(a))'") {
     bool result = is_realizable<ForwardSynthesis>(formula, partition);
     REQUIRE(!result);
   }
+}
+
+TEST_CASE("forward synthesis of '(X(F(~b))) U (F(a))'") {
+  utils::Logger logger("nike");
+  logger.level(nike::utils::LogLevel::debug);
+  auto context = std::make_shared<logic::Context>();
+  auto a = context->make_atom("a");
+  auto b = context->make_atom("b");
+  auto not_b = context->make_prop_not(b);
+  auto not_end = context->make_not_end();
+  auto always_a = context->make_eventually(a);
+  auto eventually_not_b = context->make_eventually(not_b);
+  auto next_eventually = context->make_weak_next(eventually_not_b);
+  auto until = context->make_until({next_eventually, always_a});
+  auto formula = context->make_and({until, not_end});
+
+  //  SECTION("a controllable, b controllable") {
+  //    auto partition = InputOutputPartition({"dummy"}, {"a", "b"});
+  //    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  //    REQUIRE(result);
+  //  }
+  SECTION("a uncontrollable, b controllable") {
+    auto partition = InputOutputPartition({"a"}, {"b"});
+    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    REQUIRE(!result);
+  }
+  //  SECTION("a controllable, b uncontrollable") {
+  //    auto partition = InputOutputPartition({"b"}, {"a"});
+  //    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  //    REQUIRE(result);
+  //  }
+  //  SECTION("a uncontrollable, b uncontrollable") {
+  //    auto partition = InputOutputPartition({"a", "b"}, {"dummy"});
+  //    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  //    REQUIRE(!result);
+  //  }
 }
 
 } // namespace Test

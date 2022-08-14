@@ -15,12 +15,12 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <nike/eval.hpp>
-#include <nike/logic/ltlf.hpp>
+#include "nike/logic/eval.hpp"
+#include "nike/logic/ltlf.hpp"
 #include <numeric>
 
 namespace nike {
-namespace core {
+namespace logic {
 
 void EvalVisitor::visit(const logic::LTLfTrue &formula) { result = true; }
 void EvalVisitor::visit(const logic::LTLfFalse &formula) { result = false; }
@@ -71,5 +71,5 @@ bool eval(const logic::LTLfFormula &formula) {
   return visitor.apply(formula);
 }
 
-} // namespace core
+} // namespace logic
 } // namespace nike

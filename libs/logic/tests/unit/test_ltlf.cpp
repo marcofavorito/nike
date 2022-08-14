@@ -302,6 +302,16 @@ TEST_CASE("last", "[logic][ltlf]") {
   REQUIRE(*actual_last == *expected_last);
 }
 
+TEST_CASE("strong operator and not_end -> removes not end", "[logic][ltlf]") {
+  auto context = Context();
+
+  auto not_end = context.make_not_end();
+  auto strong_operator = context.make_atom("a");
+  auto not_end_and_a = context.make_and({not_end, strong_operator});
+
+  REQUIRE(not_end_and_a == strong_operator);
+}
+
 } // namespace Test
 } // namespace logic
 } // namespace nike

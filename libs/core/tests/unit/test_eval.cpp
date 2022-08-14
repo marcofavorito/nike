@@ -15,8 +15,8 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "nike/logic/eval.hpp"
 #include <catch.hpp>
-#include <nike/eval.hpp>
 
 namespace nike {
 namespace core {

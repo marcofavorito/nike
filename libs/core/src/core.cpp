@@ -15,9 +15,10 @@
  * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "nike/logic/eval.hpp"
+#include "nike/logic/print.hpp"
 #include <map>
 #include <nike/core.hpp>
-#include <nike/eval.hpp>
 #include <nike/logic/atom_visitor.hpp>
 #include <nike/logic/nnf.hpp>
 #include <nike/logic/replace.hpp>
@@ -95,15 +96,19 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
                                     Path &path) {
   strategy_t success_strategy, failure_strategy;
   context_.indentation += 1;
-  auto bdd = to_bdd(*formula, context_);
-  auto bdd_formula_id = get_bdd_id(bdd);
-  context_.statistics_.visit_node(bdd_formula_id);
+  //  auto bdd = to_bdd(*formula, context_);
+  //  auto bdd_formula_id = get_bdd_id(bdd);
+  auto pl_formula = to_pl(*formula);
+  auto bdd_formula_id = pl_formula;
+  context_.print_search_debug("current states: {}",
+                              logic::to_string(*pl_formula));
+  //  context_.statistics_.visit_node(bdd_formula_id);
   context_.print_search_debug("explored states: {}",
                               context_.statistics_.nb_visited_nodes());
   context_.print_search_debug("visit node {}", bdd_formula_id);
 
-  success_strategy[bdd_formula_id] = context_.trueSystemMove;
-  failure_strategy[bdd_formula_id] = {};
+  //  success_strategy[bdd_formula_id] = context_.trueSystemMove;
+  //  failure_strategy[bdd_formula_id] = {};
   context_.print_search_debug("State {}", bdd_formula_id);
   if (context_.discovered.find(bdd_formula_id) != context_.discovered.end()) {
     context_.indentation -= 1;
@@ -135,7 +140,7 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
   if (eval(*formula)) {
     context_.print_search_debug("{} accepting!", bdd_formula_id);
     context_.discovered[bdd_formula_id] = true;
-    context_.winning_moves[bdd_formula_id] = context_.trueSystemMove;
+    //    context_.winning_moves[bdd_formula_id] = context_.trueSystemMove;
     context_.indentation -= 1;
     //        return success_strategy;
     return true;
@@ -148,9 +153,9 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
         "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
     strategy_t strategy;
     // TODO update one_step_realizability so to return a move
-    strategy[bdd_formula_id] = move_t{};
+    //    strategy[bdd_formula_id] = move_t{};
     context_.discovered[bdd_formula_id] = true;
-    context_.winning_moves[bdd_formula_id] = move_t{};
+    //    context_.winning_moves[bdd_formula_id] = move_t{};
     context_.indentation -= 1;
     //        return strategy;
     return true;
@@ -167,7 +172,7 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
   }
 
   path.push(bdd_formula_id);
-  logic::pl_ptr pl_formula = to_pl(*formula);
+  //  logic::pl_ptr pl_formula = to_pl(*formula);
   //    auto system_strategy = find_system_move(pl_formula, path);
   auto result = find_system_move(pl_formula, path);
   if (result) {
@@ -322,6 +327,8 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula,
 logic::ltlf_ptr
 ForwardSynthesis::next_state_formula_(const logic::pl_ptr &pl_formula) {
   auto formula = to_ltlf(*pl_formula);
+  context_.print_search_debug("compute next state formula from: {}",
+                              logic::to_string(*formula));
   auto next_state_formula = xnf(*strip_next(*formula));
   return next_state_formula;
 }

@@ -21,6 +21,22 @@
 namespace nike {
 namespace logic {
 
+void PrintVisitor::visit(const PLTrue &f) { result = "ptrue"; };
+void PrintVisitor::visit(const PLFalse &f) { result = "pfalse"; };
+void PrintVisitor::visit(const PLLiteral &f) {
+  if (is_a<StringSymbol>(*f.proposition)) {
+    result = std::static_pointer_cast<const StringSymbol>(f.proposition)->name;
+  } else {
+    result =
+        to_string(*std::static_pointer_cast<const LTLfFormula>(f.proposition));
+  }
+  if (f.negated) {
+    result = "!(" + result + ")";
+  }
+};
+void PrintVisitor::visit(const PLAnd &f) { pl_binary_op_to_string(f, "&"); };
+void PrintVisitor::visit(const PLOr &f) { pl_binary_op_to_string(f, "|"); };
+
 void PrintVisitor::visit(const LTLfTrue &formula) { result = "tt"; }
 void PrintVisitor::visit(const LTLfFalse &formula) { result = "ff"; }
 void PrintVisitor::visit(const LTLfPropTrue &formula) { result = "true"; }
@@ -30,8 +46,7 @@ void PrintVisitor::visit(const LTLfAtom &formula) {
     result = std::static_pointer_cast<const StringSymbol>(formula.symbol)->name;
     return;
   }
-  // TODO process non-string symbol recursively...
-  assert(false);
+  result = apply(*std::static_pointer_cast<const LTLfFormula>(formula.symbol));
 }
 void PrintVisitor::visit(const LTLfNot &formula) {
   unary_op_to_string(formula, "~");
@@ -77,9 +92,23 @@ std::string PrintVisitor::apply(const LTLfFormula &f) {
   f.accept(*this);
   return result;
 }
+std::string PrintVisitor::apply(const PLFormula &f) {
+  f.accept(*this);
+  return result;
+}
 
 void PrintVisitor::binary_op_to_string(const LTLfBinaryOp &formula,
                                        const std::string &op_symbol) {
+  std::stringstream ss;
+  std::string temp;
+  for (auto it = formula.args.begin(); it != formula.args.end() - 1; ++it) {
+    ss << "(" << apply(**it) << ") " << op_symbol << " ";
+  }
+  ss << "(" << apply(**(formula.args.end() - 1)) << ")";
+  result = ss.str();
+}
+void PrintVisitor::pl_binary_op_to_string(const PLBinaryOp &formula,
+                                          const std::string &op_symbol) {
   std::stringstream ss;
   std::string temp;
   for (auto it = formula.args.begin(); it != formula.args.end() - 1; ++it) {
@@ -98,6 +127,11 @@ void PrintVisitor::unary_op_to_string(const LTLfUnaryOp &formula,
 }
 
 std::string to_string(const LTLfFormula &f) {
+  PrintVisitor visitor{};
+  return visitor.apply(f);
+}
+
+std::string to_string(const PLFormula &f) {
   PrintVisitor visitor{};
   return visitor.apply(f);
 }

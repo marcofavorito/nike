@@ -136,7 +136,7 @@ void XnfVisitor::visit(const logic::LTLfEventually &formula) {
   auto &c = formula.ctx();
   auto not_end = formula.ctx().make_not_end();
   if (*not_end == formula) {
-    result = result = std::static_pointer_cast<const logic::LTLfFormula>(
+    result = std::static_pointer_cast<const logic::LTLfFormula>(
         formula.shared_from_this());
     ;
     return;
@@ -144,8 +144,8 @@ void XnfVisitor::visit(const logic::LTLfEventually &formula) {
   // F(phi), phi != tt
   auto now_part = c.make_and({apply(*formula.arg), not_end});
   auto next_part =
-      c.make_next(result = std::static_pointer_cast<const logic::LTLfFormula>(
-                      formula.shared_from_this()));
+      c.make_next(std::static_pointer_cast<const logic::LTLfFormula>(
+          formula.shared_from_this()));
   auto temp = c.make_or({now_part, next_part});
   result = temp;
 }
@@ -153,14 +153,14 @@ void XnfVisitor::visit(const logic::LTLfAlways &formula) {
   auto &c = formula.ctx();
   auto end = formula.ctx().make_end();
   if (*end == formula) {
-    result = result = std::static_pointer_cast<const logic::LTLfFormula>(
+    result = std::static_pointer_cast<const logic::LTLfFormula>(
         formula.shared_from_this());
     return;
   }
   // G(phi), phi != ff
   auto now_part = c.make_or({apply(*formula.arg), end});
-  auto next_part = c.make_weak_next(
-      result = std::static_pointer_cast<const logic::LTLfFormula>(
+  auto next_part =
+      c.make_weak_next(std::static_pointer_cast<const logic::LTLfFormula>(
           formula.shared_from_this()));
   auto temp = c.make_and({now_part, next_part});
   result = apply(*temp);

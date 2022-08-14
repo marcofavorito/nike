@@ -1,47 +1,32 @@
 #pragma once
 /*
- * This file is part of Nike.
+ * This file is part of Cynthia.
  *
- * Nike is free software: you can redistribute it and/or modify
+ * Cynthia is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Nike is distributed in the hope that it will be useful,
+ * Cynthia is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstdint>
-#include <memory>
-
-#include <nike/logic/utils.hpp>
-#include <nike/logic/visitor.hpp>
+#include "base.hpp"
+#include "visitor.hpp"
 
 namespace nike {
 namespace logic {
 
-class PrintVisitor : public Visitor {
+class EvalVisitor : public Visitor {
 private:
-  void binary_op_to_string(const LTLfBinaryOp &formula,
-                           const std::string &op_symbol);
-  void pl_binary_op_to_string(const PLBinaryOp &formula,
-                              const std::string &op_symbol);
-  void unary_op_to_string(const LTLfUnaryOp &formula,
-                          const std::string &op_symbol);
+  bool result;
 
 public:
-  std::string result;
-  void visit(const PLTrue &) override;
-  void visit(const PLFalse &) override;
-  void visit(const PLLiteral &) override;
-  void visit(const PLAnd &) override;
-  void visit(const PLOr &) override;
-
   void visit(const LTLfTrue &) override;
   void visit(const LTLfFalse &) override;
   void visit(const LTLfPropTrue &) override;
@@ -61,12 +46,8 @@ public:
   void visit(const LTLfEventually &) override;
   void visit(const LTLfAlways &) override;
 
-  std::string apply(const LTLfFormula &f);
-  std::string apply(const PLFormula &f);
+  bool apply(const LTLfFormula &formula);
 };
-
-std::string to_string(const LTLfFormula &f);
-std::string to_string(const PLFormula &f);
 
 } // namespace logic
 } // namespace nike

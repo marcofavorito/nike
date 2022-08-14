@@ -209,14 +209,14 @@ pl_ptr Context::make_literal(const ast_ptr &symbol, bool negated) {
 }
 pl_ptr Context::make_prop_and(const vec_pl_ptr &args) {
   pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
-  auto tmp = and_or<const PLFormula, PLAnd, PLTrue, PLFalse, PLAnd, PLOr>(
+  auto tmp = and_or_prop<const PLFormula, PLAnd, PLTrue, PLFalse, PLAnd, PLOr>(
       *this, args, false, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
 }
 pl_ptr Context::make_prop_or(const vec_pl_ptr &args) {
   pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
-  auto tmp = and_or<const PLFormula, PLOr, PLTrue, PLFalse, PLAnd, PLOr>(
+  auto tmp = and_or_prop<const PLFormula, PLOr, PLTrue, PLFalse, PLAnd, PLOr>(
       *this, args, true, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;

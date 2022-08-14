@@ -63,8 +63,9 @@ public:
     Statistics statistics_;
     Graph graph;
     std::map<std::string, size_t> prop_to_id;
-    std::map<long, bool> discovered;
-    std::set<long> loop_tags;
+    //    std::map<long, bool> discovered;
+    std::map<logic::pl_ptr, bool> discovered;
+    std::set<logic::pl_ptr> loop_tags;
     std::map<long, move_t> winning_moves;
     std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
     std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;

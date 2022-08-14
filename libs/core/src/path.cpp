@@ -22,22 +22,22 @@
 namespace nike {
 namespace core {
 
-void Path::push(size_t node_id) {
+void Path::push(logic::pl_ptr node_id) {
   if (contains(node_id)) {
     throw std::logic_error("should not already contain node");
   }
   path.push(node_id);
   node_set.insert(node_id);
 }
-size_t Path::pop() {
+logic::pl_ptr Path::pop() {
   assert(!path.empty());
   auto node_id = path.top();
   path.pop();
   node_set.erase(node_id);
   return node_id;
 }
-size_t Path::back() { return path.top(); }
-bool Path::contains(size_t node_id) {
+logic::pl_ptr Path::back() { return path.top(); }
+bool Path::contains(logic::pl_ptr node_id) {
   return node_set.find(node_id) != node_set.end();
 }
 

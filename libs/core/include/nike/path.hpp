@@ -17,6 +17,7 @@
  */
 
 #include <cstddef>
+#include <nike/logic/pl.hpp>
 #include <set>
 #include <stack>
 
@@ -25,14 +26,14 @@ namespace core {
 
 class Path {
 private:
-  std::stack<size_t> path;
-  std::set<size_t> node_set;
+  std::stack<logic::pl_ptr> path;
+  std::set<logic::pl_ptr> node_set;
 
 public:
-  void push(size_t node);
-  size_t pop();
-  size_t back();
-  bool contains(size_t);
+  void push(logic::pl_ptr node);
+  logic::pl_ptr pop();
+  logic::pl_ptr back();
+  bool contains(logic::pl_ptr);
 };
 
 } // namespace core

@@ -20,7 +20,7 @@
 namespace nike {
 namespace core {
 
-void Statistics::visit_node(size_t node_id) { nodes.insert(node_id); }
+void Statistics::visit_node(logic::pl_ptr node_id) { nodes.insert(node_id); }
 
 size_t Statistics::nb_visited_nodes() const { return nodes.size(); }
 } // namespace core
