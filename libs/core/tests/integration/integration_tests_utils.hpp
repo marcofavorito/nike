@@ -38,6 +38,7 @@ typedef std::tuple<size_t, std::filesystem::path, std::filesystem::path,
 
 void check_realizability(const problem_t &problem) {
   auto logger = utils::Logger("test");
+  nike::utils::Logger::level(nike::utils::LogLevel::info);
 
   // unpack input
   size_t index;

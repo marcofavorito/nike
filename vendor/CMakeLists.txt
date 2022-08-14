@@ -34,9 +34,14 @@ include(Catch)
 set (SPDLOG_MODULE_PATH "${VENDOR_MODULE_PATH}/spdlog")
 set (SPDLOG_INCLUDE_PATH "${SPDLOG_MODULE_PATH}/include")
 # -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# CLI11
+set (CLI11_MODULE_PATH "${VENDOR_MODULE_PATH}/cli11")
+set (CLI11_INCLUDE_PATH "${CLI11_MODULE_PATH}/include")
+# -------------------------------------------------------------------------
 
 #set variables
-set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH})
+set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH})
 
 #set variables for tests
 set (TEST_VENDOR_INCLUDE_PATH ${CATCH_INCLUDE_PATH})

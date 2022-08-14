@@ -20,25 +20,90 @@
 #include <sstream>
 #include <string>
 
-int main(int argc, char **argv) {
+#include <CLI/CLI.hpp>
 
-  //  std::string formula = "X[!](x & a)";
-  std::string formula = "(x | a) & (X[!](x | a))";
-  std::string part_file = "ignore/part.part";
-  nike::utils::Logger::level(nike::utils::LogLevel::debug);
+int main(int argc, char **argv) {
+  nike::utils::Logger logger("main");
+  nike::utils::Logger::level(nike::utils::LogLevel::info);
+
+  CLI::App app{"A tool for SDD-based forward LTLf synthesis."};
+
+  bool no_empty = false;
+  app.add_flag("-n,--no-empty", no_empty, "Enforce non-empty semantics.");
+  bool version = false;
+  app.add_flag("-V,--version", version, "Print the version and exit.");
+  bool verbose = false;
+  app.add_flag("-v,--verbose", verbose, "Set verbose mode.");
+  bool enable_gc = false;
+  app.add_flag("-g,--garbage-collection", enable_gc,
+               "Enable garbage collection.");
+
+  // options & flags
+  std::string filename;
+  std::string formula;
+
+  auto format = app.add_option_group("Input format");
+  CLI::Option *formula_opt = app.add_option("-i,--inline", formula, "Formula.");
+  CLI::Option *file_opt =
+      app.add_option("-f,--file", filename, "File to formula.")
+          ->check(CLI::ExistingFile);
+  formula_opt->excludes(file_opt);
+  file_opt->excludes(formula_opt);
+  format->add_option(formula_opt);
+  format->add_option(file_opt);
+  format->require_option(1, 1);
+
+  std::string part_file;
+  CLI::Option *part_opt = app.add_option("--part", part_file, "Partition file.")
+                              ->check(CLI::ExistingFile);
+
+  CLI11_PARSE(app, argc, argv)
+
+  if (version) {
+    std::cout << NIKE_VERSION << std::endl;
+    return 0;
+  }
+
+  if (verbose) {
+    nike::utils::Logger::level(nike::utils::LogLevel::debug);
+  }
+
   auto driver = nike::parser::ltlf::LTLfDriver();
-  std::stringstream formula_stream(formula);
-  driver.parse(formula_stream);
+  if (!file_opt->empty()) {
+    logger.info("Parsing {}", filename);
+    driver.parse(filename.c_str());
+  } else {
+    std::stringstream formula_stream(formula);
+    logger.info("Parsing {}", formula);
+    driver.parse(formula_stream);
+  }
 
   auto parsed_formula = driver.get_result();
+  if (no_empty) {
+    logger.info("Apply no-empty semantics.");
+    auto context = driver.context;
+    auto end = context->make_end();
+    auto not_end = context->make_not(end);
+    parsed_formula = context->make_and({parsed_formula, not_end});
+  }
+
+  logger.info("Reading partition file {}", part_file);
   auto partition = nike::core::InputOutputPartition::read_from_file(part_file);
 
-  bool result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
-      parsed_formula, partition, true);
-  if (result)
-    std::cout << "realizable." << std::endl;
-  else
-    std::cout << "unrealizable." << std::endl;
+  logger.info("Starting synthesis");
 
+  auto t_start = std::chrono::high_resolution_clock::now();
+
+  bool result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
+      parsed_formula, partition, enable_gc);
+  if (result)
+    logger.info("realizable.");
+  else
+    logger.info("unrealizable.");
+
+  auto t_end = std::chrono::high_resolution_clock::now();
+  double elapsed_time =
+      std::chrono::duration<double, std::milli>(t_end - t_start).count();
+  logger.info("Overall time elapsed: {}ms", elapsed_time);
   return 0;
 }
