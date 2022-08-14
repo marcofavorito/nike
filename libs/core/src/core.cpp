@@ -24,9 +24,9 @@
 #include <nike/one_step_realizability.hpp>
 #include <nike/one_step_unrealizability.hpp>
 #include <nike/strip_next.hpp>
+#include <nike/to_bdd.hpp>
 #include <nike/to_ltlf.hpp>
 #include <nike/to_pl.hpp>
-#include <nike/to_zdd.hpp>
 #include <nike/xnf.hpp>
 
 namespace nike {
@@ -66,11 +66,11 @@ bool ForwardSynthesis::forward_synthesis_() {
   context_.logger.info("Starting the search...");
 
   //  auto root_sdd_node = to_sdd(*context_.xnf_formula, context_);
-  //  auto zdd_formula_id = sdd_id(root_sdd_node);
+  //  auto bdd_formula_id = sdd_id(root_sdd_node);
   context_.logger.info("Starting first system move...");
   auto path = Path{};
   auto strategy = system_move_(context_.xnf_formula, path);
-  //  bool result = strategy[zdd_formula_id] !=
+  //  bool result = strategy[bdd_formula_id] !=
   //  sdd_manager_false(context_.manager); context_.print_search_debug("Explored
   //  states: {}",
   //                       context_.statistics_.nb_visited_nodes());
@@ -95,45 +95,47 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
                                     Path &path) {
   strategy_t success_strategy, failure_strategy;
   context_.indentation += 1;
-  auto zdd = to_zdd(*formula, context_);
-  auto zdd_formula_id = get_zdd_id(zdd);
-  context_.statistics_.visit_node(zdd_formula_id);
-  context_.print_search_debug("visit node {}", zdd_formula_id);
+  auto bdd = to_bdd(*formula, context_);
+  auto bdd_formula_id = get_bdd_id(bdd);
+  context_.statistics_.visit_node(bdd_formula_id);
+  context_.print_search_debug("explored states: {}",
+                              context_.statistics_.nb_visited_nodes());
+  context_.print_search_debug("visit node {}", bdd_formula_id);
 
-  success_strategy[zdd_formula_id] = context_.trueSystemMove;
-  failure_strategy[zdd_formula_id] = {};
-  context_.print_search_debug("State {}", zdd_formula_id);
-  if (context_.discovered.find(zdd_formula_id) != context_.discovered.end()) {
+  success_strategy[bdd_formula_id] = context_.trueSystemMove;
+  failure_strategy[bdd_formula_id] = {};
+  context_.print_search_debug("State {}", bdd_formula_id);
+  if (context_.discovered.find(bdd_formula_id) != context_.discovered.end()) {
     context_.indentation -= 1;
-    bool is_success = context_.discovered[zdd_formula_id];
+    bool is_success = context_.discovered[bdd_formula_id];
     if (is_success) {
       context_.print_search_debug("{} already discovered, success",
-                                  zdd_formula_id);
-      //            return strategy_t{{zdd_formula_id,
-      //            context_.winning_moves[zdd_formula_id]}};
+                                  bdd_formula_id);
+      //            return strategy_t{{bdd_formula_id,
+      //            context_.winning_moves[bdd_formula_id]}};
       return true;
     } else {
       context_.print_search_debug("{} already discovered, failure",
-                                  zdd_formula_id);
+                                  bdd_formula_id);
       //            return failure_strategy;
       return false;
     }
   }
 
-  if (path.contains(zdd_formula_id)) {
+  if (path.contains(bdd_formula_id)) {
     context_.print_search_debug("Loop detected for node {}, tagging the node",
-                                zdd_formula_id);
-    context_.loop_tags.insert(zdd_formula_id);
-    context_.discovered[zdd_formula_id] = false;
+                                bdd_formula_id);
+    context_.loop_tags.insert(bdd_formula_id);
+    context_.discovered[bdd_formula_id] = false;
     context_.indentation -= 1;
     //        return failure_strategy;
     return false;
   }
 
   if (eval(*formula)) {
-    context_.print_search_debug("{} accepting!", zdd_formula_id);
-    context_.discovered[zdd_formula_id] = true;
-    context_.winning_moves[zdd_formula_id] = context_.trueSystemMove;
+    context_.print_search_debug("{} accepting!", bdd_formula_id);
+    context_.discovered[bdd_formula_id] = true;
+    context_.winning_moves[bdd_formula_id] = context_.trueSystemMove;
     context_.indentation -= 1;
     //        return success_strategy;
     return true;
@@ -142,41 +144,49 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
   auto one_step_realizability_result =
       one_step_realizability(*formula, context_);
   if (one_step_realizability_result) {
+    context_.print_search_debug(
+        "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
     strategy_t strategy;
     // TODO update one_step_realizability so to return a move
-    strategy[zdd_formula_id] = move_t{};
-    context_.discovered[zdd_formula_id] = true;
-    context_.winning_moves[zdd_formula_id] = move_t{};
+    strategy[bdd_formula_id] = move_t{};
+    context_.discovered[bdd_formula_id] = true;
+    context_.winning_moves[bdd_formula_id] = move_t{};
     context_.indentation -= 1;
     //        return strategy;
     return true;
   }
   auto is_unrealizable = one_step_unrealizability(*formula, context_);
   if (is_unrealizable) {
-    context_.discovered[zdd_formula_id] = false;
+    context_.print_search_debug(
+        "One-step unrealizability success for node {}: FAILURE",
+        bdd_formula_id);
+    context_.discovered[bdd_formula_id] = false;
     context_.indentation -= 1;
     //        return failure_strategy;
     return false;
   }
 
-  path.push(zdd_formula_id);
+  path.push(bdd_formula_id);
   logic::pl_ptr pl_formula = to_pl(*formula);
   //    auto system_strategy = find_system_move(pl_formula, path);
   auto result = find_system_move(pl_formula, path);
   if (result) {
     context_.print_search_debug("found winning strategy at state {}",
-                                zdd_formula_id);
+                                bdd_formula_id);
+    context_.discovered[bdd_formula_id] = true;
   } else {
     context_.print_search_debug("NOT found winning strategy at state {}",
-                                zdd_formula_id);
+                                bdd_formula_id);
+    context_.discovered[bdd_formula_id] = false;
   }
+  context_.indentation -= 1;
   return result;
   //
   //    if (system_strategy.empty()){
   //        return failure_strategy;
   //    }
   //
-  //    system_strategy[zdd_formula_id]  =
+  //    system_strategy[bdd_formula_id]  =
 }
 
 bool ForwardSynthesis::find_system_move(const logic::pl_ptr &pl_formula,

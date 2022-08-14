@@ -23,13 +23,13 @@
 namespace nike {
 namespace core {
 
-class ToZddVisitor : public logic::Visitor {
+class ToBddVisitor : public logic::Visitor {
 private:
-  CUDD::ZDD result;
+  CUDD::BDD result;
   ForwardSynthesis::Context &context_;
 
 public:
-  explicit ToZddVisitor(ForwardSynthesis::Context &context)
+  explicit ToBddVisitor(ForwardSynthesis::Context &context)
       : context_{context} {}
   void visit(const logic::LTLfTrue &) override;
   void visit(const logic::LTLfFalse &) override;
@@ -50,11 +50,11 @@ public:
   void visit(const logic::LTLfEventually &) override;
   void visit(const logic::LTLfAlways &) override;
 
-  CUDD::ZDD apply(const logic::LTLfFormula &formula);
-  CUDD::ZDD get_zdd_var(const logic::LTLfFormula &formula);
+  CUDD::BDD apply(const logic::LTLfFormula &formula);
+  CUDD::BDD get_bdd_var(const logic::LTLfFormula &formula);
 };
 
-CUDD::ZDD to_zdd(const logic::LTLfFormula &formula,
+CUDD::BDD to_bdd(const logic::LTLfFormula &formula,
                  ForwardSynthesis::Context &context);
 
 } // namespace core

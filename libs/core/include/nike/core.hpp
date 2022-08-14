@@ -67,7 +67,7 @@ public:
     std::set<long> loop_tags;
     std::map<long, move_t> winning_moves;
     std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
-    std::map<logic::ltlf_ptr, CUDD::ZDD> formula_to_zdd_node;
+    std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
     utils::Logger logger;
     size_t indentation = 0;
     const bool use_gc;
@@ -88,11 +88,11 @@ public:
     template <typename Arg1, typename... Args>
     inline void print_search_debug(const char *fmt, const Arg1 &arg1,
                                    const Args &...args) const {
-      logger.info((std::string(indentation, '\t') + fmt).c_str(), arg1,
-                  args...);
+      logger.debug((std::string(indentation, '\t') + fmt).c_str(), arg1,
+                   args...);
     };
     inline void print_search_debug(const char *fmt) const {
-      logger.info((std::string(indentation, '\t') + fmt).c_str());
+      logger.debug((std::string(indentation, '\t') + fmt).c_str());
     };
 
     void initialie_maps_();
@@ -110,7 +110,7 @@ public:
 
   bool forward_synthesis_();
 
-  long get_zdd_id(CUDD::ZDD node) {
+  long get_bdd_id(CUDD::BDD node) {
     return reinterpret_cast<std::intptr_t>(node.getNode());
   }
 

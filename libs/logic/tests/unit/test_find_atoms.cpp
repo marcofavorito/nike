@@ -53,8 +53,7 @@ TEST_CASE("find_atoms of atom", "[logic][ltlf]") {
 
   auto result = find_atoms(*atom);
   REQUIRE(result.size() == 1);
-  REQUIRE(result ==
-          set_atoms_ptr{std::static_pointer_cast<const LTLfAtom>(atom)});
+  REQUIRE(result == set_ast_ptr{atom});
 }
 
 } // namespace Test
