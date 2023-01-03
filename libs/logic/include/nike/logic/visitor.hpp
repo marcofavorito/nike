@@ -70,5 +70,25 @@ public:
   virtual void visit(const LTLfAlways &) { throw_not_implemented_error(); };
 };
 
+template <typename VisitorClass>
+inline void apply_to_ltlf_binary_op_(VisitorClass &visitor,
+                                     const logic::LTLfBinaryOp &formula) {
+  for (const auto &arg : formula.args) {
+    visitor.apply(*arg);
+  }
+}
+template <typename VisitorClass>
+inline void apply_to_ltlf_unary_op_(VisitorClass &visitor,
+                                    const logic::LTLfUnaryOp &formula) {
+  visitor.apply(*formula.arg);
+}
+template <typename VisitorClass>
+inline void apply_to_pl_binary_op_(VisitorClass &visitor,
+                                   const logic::PLBinaryOp &formula) {
+  for (const auto &arg : formula.args) {
+    visitor.apply(*arg);
+  }
+}
+
 } // namespace logic
 } // namespace nike

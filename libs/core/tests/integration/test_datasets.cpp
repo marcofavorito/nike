@@ -38,7 +38,7 @@ TEST_CASE("Test Single-counter", "[integration][single_counter]") {
   // Cynthia
   auto problem = GENERATE(
       take(5, GeneratorWrapper<problem_t>(
-                   std::make_unique<SingleCounterDatasetProblemGenerator>())));
+                  std::make_unique<SingleCounterDatasetProblemGenerator>())));
   check_realizability(problem);
 }
 TEST_CASE("Test Double-counter", "[integration][double_counter]") {
@@ -46,7 +46,7 @@ TEST_CASE("Test Double-counter", "[integration][double_counter]") {
   // Cynthia
   auto problem = GENERATE(
       take(10, GeneratorWrapper<problem_t>(
-                  std::make_unique<DoubleCounterDatasetProblemGenerator>())));
+                   std::make_unique<DoubleCounterDatasetProblemGenerator>())));
   check_realizability(problem);
 }
 TEST_CASE("Test Nim-1", "[integration][nim][nim_1]") {
