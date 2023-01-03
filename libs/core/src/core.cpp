@@ -95,8 +95,9 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
                                     Path &path) {
   strategy_t success_strategy, failure_strategy;
   context_.indentation += 1;
-  auto bdd = to_bdd(*formula, context_);
-  auto bdd_formula_id = get_bdd_id(bdd);
+//  auto bdd = to_bdd(*formula, context_);
+//  auto bdd_formula_id = get_bdd_id(bdd);
+  auto bdd_formula_id = (size_t) formula.get();
   context_.statistics_.visit_node(bdd_formula_id);
   context_.print_search_debug("explored states: {}",
                               context_.statistics_.nb_visited_nodes());
