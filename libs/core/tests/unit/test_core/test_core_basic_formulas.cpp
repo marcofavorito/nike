@@ -396,6 +396,7 @@ TEST_CASE("forward synthesis of 'p0 R (F(p1))'") {
   }
 }
 TEST_CASE("forward synthesis of '(X(F(~b))) U (G(a))'") {
+  utils::Logger::level(utils::LogLevel::debug);
   auto context = std::make_shared<logic::Context>();
   auto a = context->make_atom("a");
   auto b = context->make_atom("b");

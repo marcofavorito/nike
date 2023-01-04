@@ -70,17 +70,21 @@ public:
     std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
     utils::Logger logger;
     size_t indentation = 0;
-    const bool use_gc;
-    const float gc_threshold;
+    bool use_gc;
+    float gc_threshold;
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
     move_t trueSystemMove;
     move_t falseSystemMove;
     move_t trueEnvMove;
     move_t falseEnvMove;
+    double max_formula_size_growth_rate_;
+    size_t current_max_size_;
+    bool maxSizeReached;
     Context(const logic::ltlf_ptr &formula,
             const InputOutputPartition &partition, bool use_gc = false,
-            float gc_threshold = 0.95);
+            float gc_threshold = 0.95,
+            double max_formula_size_growth_rate = 1.1);
     ~Context() {}
 
     logic::ltlf_ptr get_formula(size_t index) const;
@@ -99,9 +103,11 @@ public:
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,
-                   bool enable_gc = false)
-      : context_{formula, partition, enable_gc},
-        ISynthesis(formula, partition){};
+                   bool enable_gc = false,
+                   double max_formula_size_growth_rate = 1.1)
+      : ISynthesis(formula, partition), context_{
+                                            formula, partition, enable_gc, 0.95,
+                                            max_formula_size_growth_rate} {};
 
   static std::map<std::string, size_t>
   compute_prop_to_id_map(const Closure &closure,
@@ -109,6 +115,7 @@ public:
   bool is_realizable() override;
 
   bool forward_synthesis_();
+  bool ids_forward_synthesis_();
 
   long get_bdd_id(CUDD::BDD node) {
     return reinterpret_cast<std::intptr_t>(node.getNode());
@@ -116,6 +123,7 @@ public:
 
 private:
   Context context_;
+
   bool system_move_(const logic::ltlf_ptr &formula, Path &path);
   bool find_env_move_(const logic::pl_ptr &pl_formula, Path &path);
   //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
