@@ -30,6 +30,12 @@ namespace core {
 
 typedef std::map<long, move_t> strategy_t;
 
+class max_formula_size_reached : public std::logic_error {
+public:
+  explicit max_formula_size_reached(const std::string &reason)
+      : std::logic_error(reason) {}
+};
+
 class ISynthesis {
 public:
   const logic::ltlf_ptr formula;
@@ -78,13 +84,11 @@ public:
     move_t falseSystemMove;
     move_t trueEnvMove;
     move_t falseEnvMove;
-    double max_formula_size_growth_rate_;
     size_t current_max_size_;
     bool maxSizeReached;
     Context(const logic::ltlf_ptr &formula,
             const InputOutputPartition &partition, bool use_gc = false,
-            float gc_threshold = 0.95,
-            double max_formula_size_growth_rate = 1.1);
+            float gc_threshold = 0.95);
     ~Context() {}
 
     logic::ltlf_ptr get_formula(size_t index) const;
@@ -103,11 +107,9 @@ public:
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,
-                   bool enable_gc = false,
-                   double max_formula_size_growth_rate = 1.1)
-      : ISynthesis(formula, partition), context_{
-                                            formula, partition, enable_gc, 0.95,
-                                            max_formula_size_growth_rate} {};
+                   bool enable_gc = false)
+      : ISynthesis(formula, partition), context_{formula, partition,
+                                                 enable_gc} {};
 
   static std::map<std::string, size_t>
   compute_prop_to_id_map(const Closure &closure,

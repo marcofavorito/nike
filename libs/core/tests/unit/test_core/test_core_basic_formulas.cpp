@@ -17,6 +17,8 @@
 
 #include <catch.hpp>
 #include <nike/core.hpp>
+#include <nike/parser/driver.hpp>
+#include <sstream>
 
 namespace nike {
 namespace core {

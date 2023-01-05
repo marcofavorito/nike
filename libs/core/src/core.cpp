@@ -44,22 +44,22 @@ bool ForwardSynthesis::is_realizable() {
 }
 
 bool ForwardSynthesis::ids_forward_synthesis_() {
-  while (true) {
+
+  // first try faster version:
+  try {
     context_.print_search_debug("start search with max formula size: {}",
                                 context_.current_max_size_);
     context_.maxSizeReached = false;
     bool result = forward_synthesis_();
-    if (context_.maxSizeReached) {
-      auto new_max_size =
-          context_.current_max_size_ * context_.max_formula_size_growth_rate_;
-      context_ =
-          Context{formula, partition, context_.use_gc, context_.gc_threshold,
-                  context_.max_formula_size_growth_rate_};
-      context_.current_max_size_ = new_max_size;
-      continue;
-    }
     return result;
+  } catch (max_formula_size_reached &e) {
+    context_.logger.info(e.what());
   }
+  context_.maxSizeReached = true;
+  context_.logger.info(
+      "Start search with full state propositional equivalence");
+  bool result = forward_synthesis_();
+  return result;
 }
 
 bool ForwardSynthesis::forward_synthesis_() {
@@ -117,23 +117,30 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
   strategy_t success_strategy, failure_strategy;
   context_.indentation += 1;
 
-  context_.print_search_debug("Formula: {}", logic::to_string(*formula));
+  //  context_.print_search_debug("Formula: {}", logic::to_string(*formula));
 
-  //  auto bdd = to_bdd(*formula, context_);
-  //  auto bdd_formula_id = get_bdd_id(bdd);
-  auto bdd_formula_id = (size_t)formula.get();
-
-  // check formula is too large
-  auto formulaSize = logic::size(*formula);
-  context_.print_search_debug("Formula size of {} is {}", bdd_formula_id,
-                              formulaSize);
-    if (logic::size(*formula) > context_.current_max_size_){
+  size_t bdd_formula_id;
+  if (context_.maxSizeReached) {
+    auto bdd = to_bdd(*formula, context_);
+    bdd_formula_id = get_bdd_id(bdd);
+  } else {
+    bdd_formula_id = (size_t)formula.get();
+    // check formula is too large
+    auto formulaSize = logic::size(*formula);
+    context_.print_search_debug("Formula size of {} is {}", bdd_formula_id,
+                                formulaSize);
+    if (logic::size(*formula) > context_.current_max_size_) {
       context_.maxSizeReached = true;
-      context_.print_search_debug("Formula size is {} which is greater than currently tolerated size {}", formulaSize, context_.current_max_size_);
-      context_.discovered[bdd_formula_id] = false;
+      context_.print_search_debug("Formula size is {} which is greater than "
+                                  "currently tolerated size {}",
+                                  formulaSize, context_.current_max_size_);
       context_.indentation -= 1;
-      return false;
+      throw max_formula_size_reached(
+          "Formula size is " + std::to_string(formulaSize) +
+          " which is greater than currently tolerated size " +
+          std::to_string(context_.current_max_size_));
     }
+  }
 
   context_.statistics_.visit_node(bdd_formula_id);
   context_.print_search_debug("explored states: {}",
@@ -366,16 +373,9 @@ ForwardSynthesis::next_state_formula_(const logic::pl_ptr &pl_formula) {
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
-                                   bool use_gc, float gc_threshold,
-                                   double max_formula_size_growth_rate)
+                                   bool use_gc, float gc_threshold)
     : logger{"nike"}, formula{formula}, partition{partition}, use_gc{use_gc},
-      gc_threshold{gc_threshold},
-      max_formula_size_growth_rate_{max_formula_size_growth_rate},
-      ast_manager{&formula->ctx()} {
-  if (max_formula_size_growth_rate_ < 1.0) {
-    throw std::invalid_argument(
-        "max formula size growth rate must be greater than 1.0");
-  }
+      gc_threshold{gc_threshold}, ast_manager{&formula->ctx()} {
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
   current_max_size_ = logic::size(*xnf_formula) * 3;
