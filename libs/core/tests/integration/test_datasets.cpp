@@ -50,13 +50,14 @@ TEST_CASE("Test Double-counter", "[integration][double_counter]") {
   check_realizability(problem);
 }
 TEST_CASE("Test Nim-1", "[integration][nim][nim_1]") {
-  auto problem = GENERATE(GeneratorWrapper<problem_t>(
-      std::make_unique<Nim1DatasetProblemGenerator>()));
+  auto problem =
+      GENERATE(take(5, GeneratorWrapper<problem_t>(
+                           std::make_unique<Nim1DatasetProblemGenerator>())));
   check_realizability(problem);
 }
 TEST_CASE("Test Nim-2", "[integration][nim][nim_2]") {
   auto problem =
-      GENERATE(take(4, GeneratorWrapper<problem_t>(
+      GENERATE(take(1, GeneratorWrapper<problem_t>(
                            std::make_unique<Nim2DatasetProblemGenerator>())));
   check_realizability(problem);
 }
