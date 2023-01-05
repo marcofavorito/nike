@@ -263,7 +263,8 @@ bool ForwardSynthesis::find_system_move(const logic::pl_ptr &pl_formula,
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
   context_.print_search_debug("branch on system variable {} (true)", varname);
 
-  auto pl_formula_true = logic::replace({{symbol, true}}, *pl_formula);
+  auto v = (bool)rand() % 2;
+  auto pl_formula_true = logic::replace({{symbol, v}}, *pl_formula);
   auto strategy_true = find_system_move(pl_formula_true, path);
   //        if (!strategy_true.empty()){
   //            return strategy_true;
@@ -278,7 +279,7 @@ bool ForwardSynthesis::find_system_move(const logic::pl_ptr &pl_formula,
   context_.print_search_debug("branch on system variable {} (true) FAILURE",
                               varname);
   context_.print_search_debug("branch on system variable {} (false)", varname);
-  auto pl_formula_false = logic::replace({{symbol, false}}, *pl_formula);
+  auto pl_formula_false = logic::replace({{symbol, not v}}, *pl_formula);
   auto strategy_false = find_system_move(pl_formula_false, path);
   //        if (!strategy_false.empty()){
   //            return strategy_false;
