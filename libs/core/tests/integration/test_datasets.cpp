@@ -1,18 +1,18 @@
 /*
- * This file is part of Cynthia.
+ * This file is part of Nike.
  *
- * Cynthia is free software: you can redistribute it and/or modify
+ * Nike is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Cynthia is distributed in the hope that it will be useful,
+ * Nike is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Cynthia.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "integration_tests_utils.hpp"
@@ -35,7 +35,7 @@ TEST_CASE("Test Uright patterns", "[integration][uright]") {
 
 TEST_CASE("Test Single-counter", "[integration][single_counter]") {
   // we take only the first three instances, the next ones are too complex for
-  // Cynthia
+  // Nike
   auto problem = GENERATE(
       take(5, GeneratorWrapper<problem_t>(
                   std::make_unique<SingleCounterDatasetProblemGenerator>())));
@@ -43,7 +43,7 @@ TEST_CASE("Test Single-counter", "[integration][single_counter]") {
 }
 TEST_CASE("Test Double-counter", "[integration][double_counter]") {
   // we take only the first two instances, the next ones are too complex for
-  // Cynthia
+  // Nike
   auto problem = GENERATE(
       take(10, GeneratorWrapper<problem_t>(
                    std::make_unique<DoubleCounterDatasetProblemGenerator>())));
@@ -62,7 +62,7 @@ TEST_CASE("Test Nim-2", "[integration][nim][nim_2]") {
   check_realizability(problem);
 }
 TEST_CASE("Test Nim-3", "[integration][nim][nim_3]") {
-  // we take only the first instance, the next ones are too complex for Cynthia
+  // we take only the first instance, the next ones are too complex for Nike
   auto problem =
       GENERATE(take(1, GeneratorWrapper<problem_t>(
                            std::make_unique<Nim3DatasetProblemGenerator>())));
