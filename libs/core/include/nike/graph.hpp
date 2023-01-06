@@ -52,20 +52,23 @@ class CompareVector {
 class Graph {
 
 private:
-  std::map<Node, std::map<CUDD::BDD, Node, CompareVector>> transitions;
+  // destination-node -> (start-node -> label)
+  std::map<Node, std::map<Node, graph_move_t, std::less<>>, std::less<>>
+      predecessors;
   // backward transitions might be non-deterministic
-  std::map<Node, std::map<CUDD::BDD, std::set<Node>, CompareVector>>
-      backward_transitions;
+  // start-node -> (destination-node -> label)
+  std::map<Node, std::map<Node, graph_move_t, std::less<>>, std::less<>>
+      successors;
 
-  std::map<size_t, CUDD::BDD> action_by_id;
-  static void insert_with_default_(std::map<Node, std::map<size_t, Node>> &m,
-                                   Node start, size_t action, Node end);
+  static void insert_with_default_(
+      std::map<Node, std::map<Node, graph_move_t, std::less<>>, std::less<>> &m,
+      Node start, const graph_move_t &action, Node end);
   static void insert_backward_with_default_(
-      std::map<Node, std::map<size_t, std::set<Node>>> &m, Node start,
-      size_t action, Node end);
+      std::map<Node, std::map<Node, graph_move_t, std::less<>>, std::less<>> &m,
+      Node start, const graph_move_t &action, Node end);
   template <typename K, typename V, typename C>
   static std::map<K, V, C>
-  get_or_empty_(const std::map<Node, std::map<K, V, C>> &m, Node key) {
+  get_or_empty_(const std::map<Node, std::map<K, V, C>, C> &m, Node key) {
     auto item_or_end = m.find(key);
     if (item_or_end == m.end()) {
       return {};
@@ -74,11 +77,9 @@ private:
   }
 
 public:
-  void add_transition(Node start, graph_move_t action, Node end);
-  graph_move_t get_action_by_id(size_t action_id) const;
-  std::map<graph_move_t, Node, CompareVector> get_successors(Node start) const;
-  std::map<graph_move_t, std::set<Node>, CompareVector>
-  get_predecessors(Node end) const;
+  void add_transition(Node start, const graph_move_t &action, Node end);
+  std::map<Node, graph_move_t, std::less<>> get_successors(Node start) const;
+  std::map<Node, graph_move_t, std::less<>> get_predecessors(Node end) const;
 };
 
 } // namespace core

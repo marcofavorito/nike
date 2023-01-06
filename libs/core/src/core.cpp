@@ -309,13 +309,6 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
                                 varname);
     return false;
   }
-  //        // if child fails, return
-  //        if (strategy_true.empty()){
-  //            return strategy_t{};
-  //        }
-  //
-  //        final_strategy.insert(strategy_true.begin(), strategy_true.end());
-
   // if not, try the other env move
   // set variable to 'false'
   context_.print_search_debug("branch on env variable {} (true) SUCCESS",

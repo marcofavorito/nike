@@ -127,10 +127,7 @@ private:
   bool env_move_(const logic::pl_ptr &pl_formula);
   bool find_env_move_(const logic::pl_ptr &pl_formula);
   //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
-  //  SddNodeWrapper next_state_(const SddNodeWrapper& wrapper);
   logic::ltlf_ptr next_state_formula_(const logic::pl_ptr &pl_formula);
-  //  SddNodeWrapper formula_to_sdd_(const logic::ltlf_ptr& formula);
-  //  static NodeType node_type_from_sdd_type_(const SddNodeWrapper& wrapper);
   //  void add_transition_(const SddNodeWrapper& start, void* move_node,
   //                       const SddNodeWrapper& end);
   bool find_system_move(
