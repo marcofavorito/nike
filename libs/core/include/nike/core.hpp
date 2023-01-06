@@ -70,7 +70,7 @@ public:
     Strategy strategy;
     Path path;
     std::map<std::string, size_t> prop_to_id;
-    std::map<long, bool> discovered;
+    std::map<size_t, bool> discovered;
     std::set<long> loop_tags;
     std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
     std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
@@ -126,10 +126,8 @@ private:
   bool system_move_(const logic::ltlf_ptr &formula);
   bool env_move_(const logic::pl_ptr &pl_formula);
   bool find_env_move_(const logic::pl_ptr &pl_formula);
-  //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
+  void backprop_success(size_t &node_id, NodeType node_type);
   logic::ltlf_ptr next_state_formula_(const logic::pl_ptr &pl_formula);
-  //  void add_transition_(const SddNodeWrapper& start, void* move_node,
-  //                       const SddNodeWrapper& end);
   bool find_system_move(
       const size_t &formula_id, const logic::pl_ptr &pl_formula,
       std::stack<std::pair<std::string, VarValues>> &partial_system_move);

@@ -15,14 +15,14 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "nike/logic/print.hpp"
-#include "nike/logic/size.hpp"
 #include <map>
 #include <nike/core.hpp>
 #include <nike/eval.hpp>
 #include <nike/logic/atom_visitor.hpp>
 #include <nike/logic/nnf.hpp>
+#include <nike/logic/print.hpp>
 #include <nike/logic/replace.hpp>
+#include <nike/logic/size.hpp>
 #include <nike/one_step_realizability.hpp>
 #include <nike/one_step_unrealizability.hpp>
 #include <nike/strip_next.hpp>
@@ -30,6 +30,7 @@
 #include <nike/to_ltlf.hpp>
 #include <nike/to_pl.hpp>
 #include <nike/xnf.hpp>
+#include <queue>
 
 namespace nike {
 namespace core {
@@ -200,6 +201,14 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
     context_.print_search_debug("updating strategy: {} -> {}", bdd_formula_id,
                                 move_stack_to_string(system_move_stack));
     context_.strategy.add_move_from_stack(bdd_formula_id, system_move_stack);
+
+    if (context_.loop_tags.find(bdd_formula_id) != context_.loop_tags.end()) {
+      context_.print_search_debug("trigger backward search to update "
+                                  "success tag of predecessors of {}",
+                                  bdd_formula_id);
+      backprop_success(bdd_formula_id, NodeType::OR);
+    }
+
   } else {
     context_.print_search_debug("NOT found winning strategy at state {}",
                                 bdd_formula_id);
@@ -372,6 +381,43 @@ bool ForwardSynthesis::env_move_(const logic::pl_ptr &pl_formula) {
   context_.discovered[bdd_formula_id] = result;
   context_.indentation -= 1;
   return result;
+}
+
+void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
+  auto start_node = Node{node_id, node_type};
+  std::queue<Node> queue;
+  queue.push(start_node);
+  Node current_node{};
+  while (!queue.empty()) {
+    current_node = queue.front();
+    auto all_predecessors = context_.graph.get_predecessors(current_node);
+    for (const auto &predecessor_action : all_predecessors) {
+      auto predecessor = predecessor_action.first;
+      auto action = predecessor_action.second;
+      if (predecessor.type == NodeType::OR) {
+        context_.discovered[predecessor.id] = true;
+        // TODO use right move
+        context_.strategy.add_move(predecessor.id, move_t{});
+        queue.push(predecessor);
+      } else { // if (predecessor.type == NodeType::AND) {
+        // TODO not all children of the AND node might have been added to the
+        // subgraph.
+        auto children_by_action = context_.graph.get_successors(predecessor);
+        if (std::all_of(
+                children_by_action.begin(), children_by_action.end(),
+                [this](const std::pair<Node, CUDD::BDD> &child_and_action) {
+                  auto is_discovered =
+                      context_.discovered.find(child_and_action.first.id);
+                  return is_discovered == context_.discovered.end() and
+                         is_discovered->second;
+                })) {
+          context_.discovered[predecessor.id] = true;
+          queue.push(predecessor);
+        }
+      }
+    }
+    queue.pop();
+  }
 }
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
