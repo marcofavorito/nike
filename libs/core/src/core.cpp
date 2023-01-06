@@ -392,7 +392,7 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
   current_max_size_ = logic::size(*xnf_formula) * 3;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
-  manager_ = CUDD::Cudd(0, closure_.nb_formulas());
+  manager_ = CUDD::Cudd(closure_.nb_formulas());
   manager_.AutodynEnable();
   prop_to_id = compute_prop_to_id_map(closure_, partition);
   statistics_ = Statistics();
