@@ -121,8 +121,10 @@ public:
 
 private:
   Context context_;
+  size_t get_state_id(const logic::ltlf_ptr &formula);
 
   bool system_move_(const logic::ltlf_ptr &formula);
+  bool env_move_(const logic::pl_ptr &pl_formula);
   bool find_env_move_(const logic::pl_ptr &pl_formula);
   //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
   //  SddNodeWrapper next_state_(const SddNodeWrapper& wrapper);
