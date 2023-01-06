@@ -16,6 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "strategy.hpp"
 #include <cuddObj.hh>
 #include <nike/closure.hpp>
 #include <nike/graph.hpp>
@@ -27,8 +28,6 @@
 
 namespace nike {
 namespace core {
-
-typedef std::map<long, move_t> strategy_t;
 
 class max_formula_size_reached : public std::logic_error {
 public:
@@ -68,10 +67,11 @@ public:
     CUDD::Cudd manager_;
     Statistics statistics_;
     Graph graph;
+    Strategy strategy;
+    Path path;
     std::map<std::string, size_t> prop_to_id;
     std::map<long, bool> discovered;
     std::set<long> loop_tags;
-    std::map<long, move_t> winning_moves;
     std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
     std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
     utils::Logger logger;
@@ -80,10 +80,6 @@ public:
     float gc_threshold;
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
-    move_t trueSystemMove;
-    move_t falseSystemMove;
-    move_t trueEnvMove;
-    move_t falseEnvMove;
     size_t current_max_size_;
     bool maxSizeReached;
     Context(const logic::ltlf_ptr &formula,
@@ -126,8 +122,8 @@ public:
 private:
   Context context_;
 
-  bool system_move_(const logic::ltlf_ptr &formula, Path &path);
-  bool find_env_move_(const logic::pl_ptr &pl_formula, Path &path);
+  bool system_move_(const logic::ltlf_ptr &formula);
+  bool find_env_move_(const logic::pl_ptr &pl_formula);
   //  void backprop_success(SddNodeWrapper& wrapper, strategy_t& strategy);
   //  SddNodeWrapper next_state_(const SddNodeWrapper& wrapper);
   logic::ltlf_ptr next_state_formula_(const logic::pl_ptr &pl_formula);
@@ -135,7 +131,9 @@ private:
   //  static NodeType node_type_from_sdd_type_(const SddNodeWrapper& wrapper);
   //  void add_transition_(const SddNodeWrapper& start, void* move_node,
   //                       const SddNodeWrapper& end);
-  bool find_system_move(const logic::pl_ptr &formula, Path &path);
+  bool find_system_move(
+      const size_t &formula_id, const logic::pl_ptr &pl_formula,
+      std::stack<std::pair<std::string, VarValues>> &partial_system_move);
 };
 
 } // namespace core

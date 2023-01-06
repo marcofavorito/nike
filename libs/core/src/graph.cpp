@@ -51,18 +51,19 @@ void Graph::insert_backward_with_default_(
   start_item->second[action].insert(start);
 }
 
-move_t Graph::get_action_by_id(size_t action_id) const {
+graph_move_t Graph::get_action_by_id(size_t action_id) const {
   return action_by_id.at(action_id);
 };
-std::map<move_t, Node, CompareVector> Graph::get_successors(Node start) const {
+std::map<graph_move_t, Node, CompareVector>
+Graph::get_successors(Node start) const {
   return get_or_empty_(transitions, start);
 };
-std::map<move_t, std::set<Node>, CompareVector>
+std::map<graph_move_t, std::set<Node>, CompareVector>
 Graph::get_predecessors(Node end) const {
   return get_or_empty_(backward_transitions, end);
 };
 
-void Graph::add_transition(Node start, move_t action, Node end) {
+void Graph::add_transition(Node start, graph_move_t action, Node end) {
   //  unsigned long long action_id = sdd_id(action);
   //  action_by_id[sdd_id(action)] = action;
   //  insert_with_default_(transitions, start, action_id, end);

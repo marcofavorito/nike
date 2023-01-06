@@ -21,16 +21,12 @@
 #include <string>
 #include <vector>
 
+#include <cuddObj.hh>
+
 namespace nike {
 namespace core {
 
-enum VarValues {
-  TRUE,
-  FALSE,
-  DONT_CARE,
-};
-
-typedef std::vector<VarValues> move_t;
+typedef CUDD::BDD graph_move_t;
 
 enum NodeType { AND = 0, OR = 1 };
 
@@ -56,12 +52,12 @@ class CompareVector {
 class Graph {
 
 private:
-  std::map<Node, std::map<move_t, Node, CompareVector>> transitions;
+  std::map<Node, std::map<CUDD::BDD, Node, CompareVector>> transitions;
   // backward transitions might be non-deterministic
-  std::map<Node, std::map<move_t, std::set<Node>, CompareVector>>
+  std::map<Node, std::map<CUDD::BDD, std::set<Node>, CompareVector>>
       backward_transitions;
 
-  std::map<size_t, move_t> action_by_id;
+  std::map<size_t, CUDD::BDD> action_by_id;
   static void insert_with_default_(std::map<Node, std::map<size_t, Node>> &m,
                                    Node start, size_t action, Node end);
   static void insert_backward_with_default_(
@@ -78,10 +74,10 @@ private:
   }
 
 public:
-  void add_transition(Node start, move_t action, Node end);
-  move_t get_action_by_id(size_t action_id) const;
-  std::map<move_t, Node, CompareVector> get_successors(Node start) const;
-  std::map<move_t, std::set<Node>, CompareVector>
+  void add_transition(Node start, graph_move_t action, Node end);
+  graph_move_t get_action_by_id(size_t action_id) const;
+  std::map<graph_move_t, Node, CompareVector> get_successors(Node start) const;
+  std::map<graph_move_t, std::set<Node>, CompareVector>
   get_predecessors(Node end) const;
 };
 

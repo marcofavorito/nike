@@ -89,14 +89,13 @@ bool ForwardSynthesis::forward_synthesis_() {
   //  auto root_sdd_node = to_sdd(*context_.xnf_formula, context_);
   //  auto bdd_formula_id = sdd_id(root_sdd_node);
   context_.logger.info("Starting first system move...");
-  auto path = Path{};
-  auto strategy = system_move_(context_.xnf_formula, path);
+  auto is_realizable = system_move_(context_.xnf_formula);
   //  bool result = strategy[bdd_formula_id] !=
   //  sdd_manager_false(context_.manager);
   context_.logger.info("Explored states: {}",
                        context_.statistics_.nb_visited_nodes());
   //  return result;
-  return strategy;
+  return is_realizable;
 }
 
 std::map<std::string, size_t> ForwardSynthesis::compute_prop_to_id_map(
@@ -112,9 +111,7 @@ std::map<std::string, size_t> ForwardSynthesis::compute_prop_to_id_map(
   }
   return result;
 }
-bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
-                                    Path &path) {
-  strategy_t success_strategy, failure_strategy;
+bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
   context_.indentation += 1;
 
   //  context_.print_search_debug("Formula: {}", logic::to_string(*formula));
@@ -147,8 +144,6 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
                               context_.statistics_.nb_visited_nodes());
   context_.print_search_debug("visit node {}", bdd_formula_id);
 
-  success_strategy[bdd_formula_id] = context_.trueSystemMove;
-  failure_strategy[bdd_formula_id] = {};
   context_.print_search_debug("State {}", bdd_formula_id);
   if (context_.discovered.find(bdd_formula_id) != context_.discovered.end()) {
     context_.indentation -= 1;
@@ -156,33 +151,27 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
     if (is_success) {
       context_.print_search_debug("{} already discovered, success",
                                   bdd_formula_id);
-      //            return strategy_t{{bdd_formula_id,
-      //            context_.winning_moves[bdd_formula_id]}};
       return true;
     } else {
       context_.print_search_debug("{} already discovered, failure",
                                   bdd_formula_id);
-      //            return failure_strategy;
       return false;
     }
   }
 
-  if (path.contains(bdd_formula_id)) {
+  if (context_.path.contains(bdd_formula_id)) {
     context_.print_search_debug("Loop detected for node {}, tagging the node",
                                 bdd_formula_id);
     context_.loop_tags.insert(bdd_formula_id);
     context_.discovered[bdd_formula_id] = false;
     context_.indentation -= 1;
-    //        return failure_strategy;
     return false;
   }
 
   if (eval(*formula)) {
     context_.print_search_debug("{} accepting!", bdd_formula_id);
     context_.discovered[bdd_formula_id] = true;
-    context_.winning_moves[bdd_formula_id] = context_.trueSystemMove;
     context_.indentation -= 1;
-    //        return success_strategy;
     return true;
   }
 
@@ -191,13 +180,8 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
   if (one_step_realizability_result) {
     context_.print_search_debug(
         "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
-    strategy_t strategy;
-    // TODO update one_step_realizability so to return a move
-    strategy[bdd_formula_id] = move_t{};
     context_.discovered[bdd_formula_id] = true;
-    context_.winning_moves[bdd_formula_id] = move_t{};
     context_.indentation -= 1;
-    //        return strategy;
     return true;
   }
   auto is_unrealizable = one_step_unrealizability(*formula, context_);
@@ -207,35 +191,33 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula,
         bdd_formula_id);
     context_.discovered[bdd_formula_id] = false;
     context_.indentation -= 1;
-    //        return failure_strategy;
     return false;
   }
 
-  path.push(bdd_formula_id);
+  context_.path.push(bdd_formula_id);
   logic::pl_ptr pl_formula = to_pl(*formula);
-  //    auto system_strategy = find_system_move(pl_formula, path);
-  auto result = find_system_move(pl_formula, path);
+  std::stack<std::pair<std::string, VarValues>> system_move_stack;
+  auto result = find_system_move(bdd_formula_id, pl_formula, system_move_stack);
   if (result) {
     context_.print_search_debug("found winning strategy at state {}",
                                 bdd_formula_id);
-    context_.discovered[bdd_formula_id] = true;
+    context_.print_search_debug("updating strategy: {} -> {}", bdd_formula_id,
+                                move_stack_to_string(system_move_stack));
+    context_.strategy.add_move_from_stack(bdd_formula_id, system_move_stack);
   } else {
     context_.print_search_debug("NOT found winning strategy at state {}",
                                 bdd_formula_id);
-    context_.discovered[bdd_formula_id] = false;
   }
+  context_.discovered[bdd_formula_id] = result;
   context_.indentation -= 1;
+  context_.path.pop();
   return result;
-  //
-  //    if (system_strategy.empty()){
-  //        return failure_strategy;
-  //    }
-  //
-  //    system_strategy[bdd_formula_id]  =
 }
 
-bool ForwardSynthesis::find_system_move(const logic::pl_ptr &pl_formula,
-                                        Path &path) {
+bool ForwardSynthesis::find_system_move(
+    const size_t &formula_id, const logic::pl_ptr &pl_formula,
+    std::stack<std::pair<std::string, VarValues>> &partial_system_move) {
+  bool result;
   auto allVars = logic::find_atoms(*pl_formula);
   std::vector<logic::ast_ptr> controllableVars;
   controllableVars.reserve(context_.partition.output_variables.size());
@@ -253,51 +235,47 @@ bool ForwardSynthesis::find_system_move(const logic::pl_ptr &pl_formula,
     // system choice is irrelevant
     context_.print_search_debug("no controllable variables -> find env move");
     context_.indentation += 1;
-    auto result = find_env_move_(pl_formula, path);
+    result = find_env_move_(pl_formula);
     context_.indentation -= 1;
     return result;
   }
   // pick first variable, and try to set it to 'true'
   auto symbol = controllableVars[0];
-  auto varname =
+  std::string varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
   context_.print_search_debug("branch on system variable {} (true)", varname);
 
   auto v = (bool)rand() % 2;
   auto pl_formula_true = logic::replace({{symbol, v}}, *pl_formula);
-  auto strategy_true = find_system_move(pl_formula_true, path);
-  //        if (!strategy_true.empty()){
-  //            return strategy_true;
-  //        }
-  if (strategy_true) {
+  partial_system_move.emplace(varname, VarValues::TRUE);
+  result = find_system_move(formula_id, pl_formula_true, partial_system_move);
+  if (result) {
     context_.print_search_debug("branch on system variable {} (true) SUCCESS",
                                 varname);
     return true;
   }
+  partial_system_move.pop();
 
   // set variable to 'false'
   context_.print_search_debug("branch on system variable {} (true) FAILURE",
                               varname);
   context_.print_search_debug("branch on system variable {} (false)", varname);
   auto pl_formula_false = logic::replace({{symbol, not v}}, *pl_formula);
-  auto strategy_false = find_system_move(pl_formula_false, path);
-  //        if (!strategy_false.empty()){
-  //            return strategy_false;
-  //        }
-  if (strategy_false) {
+  partial_system_move.emplace(varname, VarValues::FALSE);
+  result = find_system_move(formula_id, pl_formula_false, partial_system_move);
+  if (result) {
     context_.print_search_debug("branch on system variable {} (false) SUCCESS",
                                 varname);
     return true;
   }
+  partial_system_move.pop();
   context_.print_search_debug("branch on system variable {} (false) FAILURE",
                               varname);
   return false;
-
-  //        return strategy_t{};
 }
 
-bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula,
-                                      Path &path) {
+bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
+  bool result;
   auto allVars = logic::find_atoms(*pl_formula);
   std::vector<logic::ast_ptr> envVars;
   envVars.reserve(context_.partition.input_variables.size());
@@ -311,18 +289,17 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula,
     }
   }
 
-  strategy_t final_strategy;
-
   if (envVars.empty()) {
     // env choice is irrelevant -> go to next state
     context_.print_search_debug(
         "no uncontrollable variables -> find next system move");
     auto next_formula = next_state_formula_(pl_formula);
     context_.indentation += 1;
-    auto result = system_move_(next_formula, path);
+    result = system_move_(next_formula);
     context_.indentation -= 1;
     return result;
   }
+
   // pick first variable, and try to set it to 'true'
   auto symbol = envVars[0];
   auto varname =
@@ -330,8 +307,8 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula,
   context_.print_search_debug("branch on env variable {} (true)", varname);
 
   auto pl_formula_true = logic::replace({{symbol, true}}, *pl_formula);
-  auto strategy_true = find_env_move_(pl_formula_true, path);
-  if (!strategy_true) {
+  result = find_env_move_(pl_formula_true);
+  if (!result) {
     context_.print_search_debug("branch on env variable {} (true) FAILURE",
                                 varname);
     return false;
@@ -349,17 +326,12 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula,
                               varname);
   context_.print_search_debug("branch on env variable {} (false)", varname);
   auto pl_formula_false = logic::replace({{symbol, false}}, *pl_formula);
-  auto strategy_false = find_env_move_(pl_formula_false, path);
-  if (!strategy_false) {
+  result = find_env_move_(pl_formula_false);
+  if (!result) {
     context_.print_search_debug("branch on env variable {} (false) FAILURE",
                                 varname);
     return false;
   }
-  //        if (strategy_false.empty()){
-  //            return strategy_false;
-  //        }
-  //        final_strategy.insert(strategy_false.begin(), strategy_false.end());
-  //        return final_strategy;
   context_.print_search_debug("branch on env variable {} (false) SUCCESS",
                               varname);
   return true;
@@ -376,17 +348,15 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
                                    bool use_gc, float gc_threshold)
     : logger{"nike"}, formula{formula}, partition{partition}, use_gc{use_gc},
-      gc_threshold{gc_threshold}, ast_manager{&formula->ctx()} {
+      gc_threshold{gc_threshold},
+      ast_manager{&formula->ctx()}, strategy{partition.output_variables} {
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
   current_max_size_ = logic::size(*xnf_formula) * 3;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
   manager_ = CUDD::Cudd(0, closure_.nb_formulas());
-  trueSystemMove = move_t{partition.output_variables.size(), DONT_CARE};
-  trueEnvMove = move_t{partition.input_variables.size(), DONT_CARE};
-  falseSystemMove = move_t{};
-  falseEnvMove = move_t{};
+  manager_.AutodynEnable();
   prop_to_id = compute_prop_to_id_map(closure_, partition);
   statistics_ = Statistics();
   initialie_maps_();
