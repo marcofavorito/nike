@@ -32,8 +32,8 @@ public:
   std::map<logic::ast_ptr, int> propToId;
   CUDD::BDD controllablesConj;
   explicit OneStepRealizabilityVisitor(ForwardSynthesis::Context &context)
-      : context_{context}, manager{CUDD::Cudd()}, controllablesConj{
-                                                      manager.bddOne()} {}
+      : context_{context}, manager{CUDD::Cudd(0, 0, 2048, 0)},
+        controllablesConj{manager.bddOne()} {}
   ~OneStepRealizabilityVisitor() {}
   void visit(const logic::LTLfTrue &) override;
   void visit(const logic::LTLfFalse &) override;

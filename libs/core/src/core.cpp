@@ -345,8 +345,7 @@ size_t ForwardSynthesis::get_state_id(const logic::ltlf_ptr &formula) {
     auto bdd = to_bdd(*formula, context_);
     auto bdd_formula_id = get_bdd_id(bdd);
     return bdd_formula_id;
-  }
-  else {
+  } else {
     auto bdd_formula_id = (size_t)formula.get();
     return bdd_formula_id;
   }
@@ -360,18 +359,22 @@ bool ForwardSynthesis::env_move_(const logic::pl_ptr &pl_formula) {
   if (context_.discovered.find(bdd_formula_id) != context_.discovered.end()) {
     bool is_success = context_.discovered[bdd_formula_id];
     if (is_success) {
-      context_.print_search_debug("env state {} already discovered, success", bdd_formula_id);
+      context_.print_search_debug("env state {} already discovered, success",
+                                  bdd_formula_id);
     } else {
-      context_.print_search_debug("env state {} already discovered, failure", bdd_formula_id);
+      context_.print_search_debug("env state {} already discovered, failure",
+                                  bdd_formula_id);
     }
     context_.indentation -= 1;
-  return is_success;
+    return is_success;
   }
   auto result = find_env_move_(pl_formula);
   if (result) {
-    context_.print_search_debug("all env moves lead to success from state {}", bdd_formula_id);
+    context_.print_search_debug("all env moves lead to success from state {}",
+                                bdd_formula_id);
   } else {
-    context_.print_search_debug("env can force agent failure from state {}",bdd_formula_id);
+    context_.print_search_debug("env can force agent failure from state {}",
+                                bdd_formula_id);
   }
   context_.discovered[bdd_formula_id] = result;
   context_.indentation -= 1;

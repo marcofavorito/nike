@@ -57,7 +57,7 @@ TEST_CASE("Test Nim-1", "[integration][nim][nim_1]") {
 }
 TEST_CASE("Test Nim-2", "[integration][nim][nim_2]") {
   auto problem =
-      GENERATE(take(1, GeneratorWrapper<problem_t>(
+      GENERATE(take(2, GeneratorWrapper<problem_t>(
                            std::make_unique<Nim2DatasetProblemGenerator>())));
   check_realizability(problem);
 }
