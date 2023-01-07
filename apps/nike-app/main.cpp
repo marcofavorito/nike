@@ -35,6 +35,14 @@ int main(int argc, char **argv) {
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Set verbose mode.");
 
+  std::map<std::string, nike::core::StateEquivalenceMode> map{
+      {"hash", nike::core::StateEquivalenceMode::HASH},
+      {"bdd", nike::core::StateEquivalenceMode::BDD}};
+  nike::core::StateEquivalenceMode mode;
+  app.add_option("-m,--mode", mode, "The mode to use.")
+      ->transform(CLI::CheckedTransformer(map, CLI::ignore_case))
+      ->default_str("hash");
+
   // options & flags
   std::string filename;
   std::string formula;
@@ -64,6 +72,8 @@ int main(int argc, char **argv) {
   if (verbose) {
     nike::utils::Logger::level(nike::utils::LogLevel::debug);
   }
+
+  logger.info("Using synthesis mode '{}'", nike::core::mode_to_string(mode));
 
   auto driver = nike::parser::ltlf::LTLfDriver();
   if (!file_opt->empty()) {

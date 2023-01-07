@@ -31,6 +31,8 @@ namespace core {
 
 enum StateEquivalenceMode { HASH = 0, BDD = 1 };
 
+std::string mode_to_string(StateEquivalenceMode mode);
+
 class max_formula_size_reached : public std::logic_error {
 public:
   explicit max_formula_size_reached(const std::string &reason)
@@ -83,7 +85,8 @@ public:
     size_t current_max_size_;
     StateEquivalenceMode mode;
     Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition, StateEquivalenceMode mode);
+            const InputOutputPartition &partition, StateEquivalenceMode mode,
+            double max_size_factor = 3.0);
     ~Context() = default;
 
     template <typename Arg1, typename... Args>
@@ -99,9 +102,11 @@ public:
     void initialie_maps_();
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
-                   const InputOutputPartition &partition)
-      : ISynthesis(formula, partition), context_{formula, partition,
-                                                 StateEquivalenceMode::HASH} {};
+                   const InputOutputPartition &partition,
+                   StateEquivalenceMode mode = StateEquivalenceMode::HASH,
+                   double max_size_factor = 3.0)
+      : ISynthesis(formula, partition), context_{formula, partition, mode,
+                                                 max_size_factor} {};
 
   static std::map<std::string, size_t>
   compute_prop_to_id_map(const Closure &closure,

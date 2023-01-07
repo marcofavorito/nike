@@ -34,6 +34,15 @@
 namespace nike {
 namespace core {
 
+std::string mode_to_string(StateEquivalenceMode mode) {
+  switch (mode) {
+  case StateEquivalenceMode::HASH:
+    return "hash";
+  case StateEquivalenceMode::BDD:
+    return "bdd";
+  }
+}
+
 ISynthesis::ISynthesis(const logic::ltlf_ptr &formula,
                        const InputOutputPartition &partition)
     : formula{formula}, partition{partition} {}
@@ -47,8 +56,8 @@ bool ForwardSynthesis::ids_forward_synthesis_() {
 
   // first try faster version:
   try {
-    context_.print_search_debug("start search with max formula size: {}",
-                                context_.current_max_size_);
+    context_.logger.info("start search with max formula size: {}",
+                         context_.current_max_size_);
     bool result = forward_synthesis_();
     return result;
   } catch (max_formula_size_reached &e) {
@@ -421,13 +430,15 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
-                                   StateEquivalenceMode mode)
+                                   StateEquivalenceMode mode,
+                                   double max_size_factor)
     : logger{"nike"}, formula{formula}, partition{partition},
       ast_manager{&formula->ctx()}, strategy{partition.output_variables},
       mode{mode} {
+
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
-  current_max_size_ = logic::size(*xnf_formula) * 3;
+  current_max_size_ = logic::size(*xnf_formula) * max_size_factor;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
   manager_ = CUDD::Cudd(closure_.nb_formulas(), 0, 4096);
