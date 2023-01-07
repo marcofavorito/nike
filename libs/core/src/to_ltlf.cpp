@@ -37,6 +37,16 @@ void ToLTLfVisitor::visit(const PLLiteral &f) {
     result = atom;
     return;
   }
+  if (is_a<StringSymbol>(*proposition)) {
+    auto atom = f.ctx().make_atom(
+        std::static_pointer_cast<const StringSymbol>(proposition));
+    if (f.negated) {
+      result = f.ctx().make_prop_not(atom);
+      return;
+    }
+    result = atom;
+    return;
+  }
 
   result = std::static_pointer_cast<const LTLfFormula>(proposition);
   // expected to be in NNF

@@ -117,6 +117,7 @@ ltlf_ptr Context::make_prop_not(const ltlf_ptr &arg) {
         std::static_pointer_cast<const LTLfPropositionalNot>(arg)->arg);
   }
   // argument must be an atom
+  assert(is_a<LTLfAtom>(*arg));
   auto negation = std::make_shared<const LTLfPropositionalNot>(*this, arg);
   auto actual = table_->insert_if_not_available(negation);
   return actual;
