@@ -239,9 +239,7 @@ bool ForwardSynthesis::find_system_move(
   if (controllableVars.empty()) {
     // system choice is irrelevant
     context_.print_search_debug("no controllable variables -> find env move");
-    context_.indentation += 1;
     result = env_move_(pl_formula);
-    context_.indentation -= 1;
     return result;
   }
   // pick first variable, and try to set it to 'true'
@@ -249,6 +247,8 @@ bool ForwardSynthesis::find_system_move(
   std::string varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
   bool v = rand() % 2 != 0;
+  //  bool v = true;
+  //  bool v = false;
   context_.print_search_debug("branch on system variable {} ({})", varname,
                               std::to_string(v));
 
@@ -301,9 +301,7 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
     context_.print_search_debug(
         "no uncontrollable variables -> find next system move");
     auto next_formula = next_state_formula_(pl_formula);
-    context_.indentation += 1;
     result = system_move_(next_formula);
-    context_.indentation -= 1;
     return result;
   }
 
@@ -312,6 +310,8 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
   auto varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
   bool v = rand() % 2 != 0;
+  //  bool v = true;
+  //  bool v = false;
   context_.print_search_debug("branch on env variable {} ({})", varname,
                               std::to_string(v));
 

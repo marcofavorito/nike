@@ -92,11 +92,11 @@ public:
     template <typename Arg1, typename... Args>
     inline void print_search_debug(const char *fmt, const Arg1 &arg1,
                                    const Args &...args) const {
-      logger.debug((std::string(indentation, '\t') + fmt).c_str(), arg1,
+      logger.debug((std::string(indentation, ' ') + fmt).c_str(), arg1,
                    args...);
     };
     inline void print_search_debug(const char *fmt) const {
-      logger.debug((std::string(indentation, '\t') + fmt).c_str());
+      logger.debug((std::string(indentation, ' ') + fmt).c_str());
     };
 
     void initialie_maps_();
