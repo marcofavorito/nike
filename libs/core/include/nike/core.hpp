@@ -29,6 +29,8 @@
 namespace nike {
 namespace core {
 
+enum StateEquivalenceMode { HASH = 0, BDD = 1 };
+
 class max_formula_size_reached : public std::logic_error {
 public:
   explicit max_formula_size_reached(const std::string &reason)
@@ -79,12 +81,11 @@ public:
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
     size_t current_max_size_;
-    bool maxSizeReached;
+    StateEquivalenceMode mode;
     Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition);
-    ~Context() {}
+            const InputOutputPartition &partition, StateEquivalenceMode mode);
+    ~Context() = default;
 
-    logic::ltlf_ptr get_formula(size_t index) const;
     template <typename Arg1, typename... Args>
     inline void print_search_debug(const char *fmt, const Arg1 &arg1,
                                    const Args &...args) const {
@@ -99,7 +100,8 @@ public:
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition)
-      : ISynthesis(formula, partition), context_{formula, partition} {};
+      : ISynthesis(formula, partition), context_{formula, partition,
+                                                 StateEquivalenceMode::HASH} {};
 
   static std::map<std::string, size_t>
   compute_prop_to_id_map(const Closure &closure,

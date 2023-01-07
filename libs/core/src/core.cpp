@@ -49,13 +49,12 @@ bool ForwardSynthesis::ids_forward_synthesis_() {
   try {
     context_.print_search_debug("start search with max formula size: {}",
                                 context_.current_max_size_);
-    context_.maxSizeReached = false;
     bool result = forward_synthesis_();
     return result;
   } catch (max_formula_size_reached &e) {
     context_.logger.info(e.what());
   }
-  context_.maxSizeReached = true;
+  context_.mode = StateEquivalenceMode::BDD;
   context_.logger.info(
       "Start search with full state propositional equivalence");
   bool result = forward_synthesis_();
@@ -112,13 +111,12 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
   //  context_.print_search_debug("Formula: {}", logic::to_string(*formula));
 
   size_t bdd_formula_id = get_state_id(formula);
-  if (not context_.maxSizeReached) {
-    // check formula is too large
+  if (context_.mode == StateEquivalenceMode::HASH) {
+    // check if formula is too large
     auto formulaSize = logic::size(*formula);
     context_.print_search_debug("Formula size of {} is {}", bdd_formula_id,
                                 formulaSize);
     if (logic::size(*formula) > context_.current_max_size_) {
-      context_.maxSizeReached = true;
       context_.print_search_debug("Formula size is {} which is greater than "
                                   "currently tolerated size {}",
                                   formulaSize, context_.current_max_size_);
@@ -342,12 +340,14 @@ ForwardSynthesis::next_state_formula_(const logic::pl_ptr &pl_formula) {
 }
 
 size_t ForwardSynthesis::get_state_id(const logic::ltlf_ptr &formula) {
-  if (context_.maxSizeReached) {
-    auto bdd = to_bdd(*formula, context_);
-    auto bdd_formula_id = get_bdd_id(bdd);
+  size_t bdd_formula_id;
+  switch (context_.mode) {
+  case StateEquivalenceMode::HASH:
+    bdd_formula_id = (size_t)formula.get();
     return bdd_formula_id;
-  } else {
-    auto bdd_formula_id = (size_t)formula.get();
+  case StateEquivalenceMode::BDD:
+    auto bdd = to_bdd(*formula, context_);
+    bdd_formula_id = get_bdd_id(bdd);
     return bdd_formula_id;
   }
 }
@@ -420,15 +420,17 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 }
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
-                                   const InputOutputPartition &partition)
+                                   const InputOutputPartition &partition,
+                                   StateEquivalenceMode mode)
     : logger{"nike"}, formula{formula}, partition{partition},
-      ast_manager{&formula->ctx()}, strategy{partition.output_variables} {
+      ast_manager{&formula->ctx()}, strategy{partition.output_variables},
+      mode{mode} {
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
   current_max_size_ = logic::size(*xnf_formula) * 3;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
-  manager_ = CUDD::Cudd(closure_.nb_formulas());
+  manager_ = CUDD::Cudd(closure_.nb_formulas(), 0, 4096);
   manager_.AutodynEnable();
   prop_to_id = compute_prop_to_id_map(closure_, partition);
   statistics_ = Statistics();
