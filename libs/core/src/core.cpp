@@ -43,6 +43,29 @@ std::string mode_to_string(StateEquivalenceMode mode) {
   }
 }
 
+bool TrueFirstBranchVariable::choose(std::string varname) {
+  if (seen.find(varname) == seen.end()) {
+    seen.insert(varname);
+    return true;
+  }
+  return false;
+}
+
+void TrueFirstBranchVariable::reset() { seen.clear(); }
+
+bool FalseFirstBranchVariable::choose(std::string varname) {
+  if (seen.find(varname) == seen.end()) {
+    seen.insert(varname);
+    return false;
+  }
+  return true;
+}
+void FalseFirstBranchVariable::reset() { seen.clear(); }
+
+bool RandomBranchVariable::choose(std::string varname) {
+  return (rand() % 2) == 0;
+}
+
 ISynthesis::ISynthesis(const logic::ltlf_ptr &formula,
                        const InputOutputPartition &partition)
     : formula{formula}, partition{partition} {}
@@ -247,9 +270,7 @@ bool ForwardSynthesis::find_system_move(
   auto symbol = controllableVars[0];
   std::string varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  bool v = rand() % 2 != 0;
-  //  bool v = true;
-  //  bool v = false;
+  bool v = context_.branch_variable.choose(varname);
   context_.print_search_debug("branch on system variable {} ({})", varname,
                               std::to_string(v));
 
@@ -310,9 +331,7 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
   auto symbol = envVars[0];
   auto varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  bool v = rand() % 2 != 0;
-  //  bool v = true;
-  //  bool v = false;
+  bool v = context_.branch_variable.choose(varname);
   context_.print_search_debug("branch on env variable {} ({})", varname,
                               std::to_string(v));
 
@@ -430,11 +449,12 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
+                                   BranchVariable &branch_variable,
                                    StateEquivalenceMode mode,
                                    double max_size_factor)
     : logger{"nike"}, formula{formula}, partition{partition},
       ast_manager{&formula->ctx()}, strategy{partition.output_variables},
-      mode{mode} {
+      branch_variable{branch_variable}, mode{mode} {
 
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);

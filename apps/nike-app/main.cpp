@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   nike::utils::Logger logger("main");
   nike::utils::Logger::level(nike::utils::LogLevel::info);
 
-  CLI::App app{"A tool for SDD-based forward LTLf synthesis."};
+  CLI::App app{"A tool for DPLL-based forward LTLf synthesis."};
 
   bool no_empty = false;
   app.add_flag("-n,--no-empty", no_empty, "Enforce non-empty semantics.");
@@ -36,8 +36,9 @@ int main(int argc, char **argv) {
   app.add_flag("-v,--verbose", verbose, "Set verbose mode.");
 
   std::map<std::string, nike::core::StateEquivalenceMode> map{
+      {"bdd", nike::core::StateEquivalenceMode::BDD},
       {"hash", nike::core::StateEquivalenceMode::HASH},
-      {"bdd", nike::core::StateEquivalenceMode::BDD}};
+  };
   nike::core::StateEquivalenceMode mode;
   app.add_option("-m,--mode", mode, "The mode to use.")
       ->transform(CLI::CheckedTransformer(map, CLI::ignore_case))
@@ -101,8 +102,9 @@ int main(int argc, char **argv) {
 
   auto t_start = std::chrono::high_resolution_clock::now();
 
+  auto b = nike::core::RandomBranchVariable{};
   bool result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
-      parsed_formula, partition);
+      parsed_formula, partition, b, mode);
   if (result)
     logger.info("realizable.");
   else

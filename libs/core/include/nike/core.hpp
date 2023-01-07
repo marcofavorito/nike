@@ -53,10 +53,37 @@ template <class Synthesis,
               std::is_base_of<ISynthesis, Synthesis>::value>::type,
           typename... Args>
 bool is_realizable(const logic::ltlf_ptr &formula,
-                   const InputOutputPartition &partition, const Args &...args) {
+                   InputOutputPartition &partition, Args &...args) {
   auto synthesis = Synthesis(formula, partition, args...);
   return synthesis.is_realizable();
 }
+
+class BranchVariable {
+public:
+  virtual bool choose(std::string varname) = 0;
+  virtual void reset(){};
+};
+
+class TrueFirstBranchVariable : public BranchVariable {
+private:
+  std::set<std::string> seen;
+
+public:
+  bool choose(std::string varname) override;
+  void reset() override;
+};
+class FalseFirstBranchVariable : public BranchVariable {
+private:
+  std::set<std::string> seen;
+
+public:
+  bool choose(std::string varname) override;
+  void reset() override;
+};
+class RandomBranchVariable : public BranchVariable {
+public:
+  bool choose(std::string varname) override;
+};
 
 class ForwardSynthesis : public ISynthesis {
 public:
@@ -83,9 +110,11 @@ public:
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
     size_t current_max_size_;
+    BranchVariable &branch_variable;
     StateEquivalenceMode mode;
     Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition, StateEquivalenceMode mode,
+            const InputOutputPartition &partition,
+            BranchVariable &branch_variable, StateEquivalenceMode mode,
             double max_size_factor = 3.0);
     ~Context() = default;
 
@@ -103,9 +132,11 @@ public:
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,
+                   BranchVariable &branch_variable,
                    StateEquivalenceMode mode = StateEquivalenceMode::HASH,
                    double max_size_factor = 3.0)
-      : ISynthesis(formula, partition), context_{formula, partition, mode,
+      : ISynthesis(formula, partition), context_{formula, partition,
+                                                 branch_variable, mode,
                                                  max_size_factor} {};
 
   static std::map<std::string, size_t>
