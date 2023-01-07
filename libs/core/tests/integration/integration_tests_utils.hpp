@@ -16,6 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "../unit/test_core/core_test_utils.hpp"
 #include <catch.hpp>
 #include <filesystem>
 #include <nike/core.hpp>
@@ -63,8 +64,7 @@ void check_realizability(const problem_t &problem) {
 
   // compute realizability
   bool actual_realizability_bool =
-      nike::core::is_realizable<nike::core::ForwardSynthesis>(parsed_formula,
-                                                              partition);
+      test_is_realizable(parsed_formula, partition);
 
   SynthesisResult actual_realizability = actual_realizability_bool
                                              ? SynthesisResult::REALIZABLE

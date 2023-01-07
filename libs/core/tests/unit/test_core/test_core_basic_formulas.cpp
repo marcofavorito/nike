@@ -15,6 +15,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "core_test_utils.hpp"
 #include <catch.hpp>
 #include <nike/core.hpp>
 #include <nike/parser/driver.hpp>
@@ -28,7 +29,7 @@ TEST_CASE("forward synthesis of 'tt'") {
   logic::Context context;
   auto partition = InputOutputPartition({"a"}, {"b"});
   auto tt = context.make_tt();
-  bool result = is_realizable<ForwardSynthesis>(tt, partition);
+  bool result = test_is_realizable(tt, partition);
   REQUIRE(result);
 }
 
@@ -36,7 +37,7 @@ TEST_CASE("forward synthesis of 'ff'") {
   logic::Context context;
   auto partition = InputOutputPartition({"a"}, {"b"});
   auto ff = context.make_ff();
-  bool result = is_realizable<ForwardSynthesis>(ff, partition);
+  bool result = test_is_realizable(ff, partition);
   REQUIRE(!result);
 }
 
@@ -44,7 +45,7 @@ TEST_CASE("forward synthesis of 'true'") {
   logic::Context context;
   auto partition = InputOutputPartition({"a"}, {"b"});
   auto true_ = context.make_prop_true();
-  bool result = is_realizable<ForwardSynthesis>(true_, partition);
+  bool result = test_is_realizable(true_, partition);
   REQUIRE(result);
 }
 
@@ -52,7 +53,7 @@ TEST_CASE("forward synthesis of 'false'") {
   logic::Context context;
   auto partition = InputOutputPartition({"a"}, {"b"});
   auto false_ = context.make_prop_false();
-  bool result = is_realizable<ForwardSynthesis>(false_, partition);
+  bool result = test_is_realizable(false_, partition);
   REQUIRE(!result);
 }
 TEST_CASE("forward synthesis of atom") {
@@ -61,12 +62,12 @@ TEST_CASE("forward synthesis of atom") {
 
   SECTION("atom controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(a, partition);
+    bool result = test_is_realizable(a, partition);
     REQUIRE(result);
   }
   SECTION("atom not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(a, partition);
+    bool result = test_is_realizable(a, partition);
     REQUIRE(!result);
   }
 }
@@ -77,12 +78,12 @@ TEST_CASE("forward synthesis of not atom") {
 
   SECTION("atom controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(not_a, partition);
+    bool result = test_is_realizable(not_a, partition);
     REQUIRE(result);
   }
   SECTION("atom not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(not_a, partition);
+    bool result = test_is_realizable(not_a, partition);
     REQUIRE(!result);
   }
 }
@@ -95,22 +96,22 @@ TEST_CASE("forward synthesis of 'a and b'") {
 
   SECTION("left not-controllable, right not-controllable") {
     auto partition = InputOutputPartition({"a", "b"}, {"c"});
-    bool result = is_realizable<ForwardSynthesis>(a_and_b, partition);
+    bool result = test_is_realizable(a_and_b, partition);
     REQUIRE(!result);
   }
   SECTION("left not-controllable, right controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(a_and_b, partition);
+    bool result = test_is_realizable(a_and_b, partition);
     REQUIRE(!result);
   }
   SECTION("left controllable, right not-controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(a_and_b, partition);
+    bool result = test_is_realizable(a_and_b, partition);
     REQUIRE(!result);
   }
   SECTION("left controllable, right controllable") {
     auto partition = InputOutputPartition({"c"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(a_and_b, partition);
+    bool result = test_is_realizable(a_and_b, partition);
     REQUIRE(result);
   }
 }
@@ -122,22 +123,22 @@ TEST_CASE("forward synthesis of 'a or b'") {
   auto a_or_b = context.make_or({a, b});
   SECTION("left not-controllable, right not-controllable") {
     auto partition = InputOutputPartition({"a", "b"}, {"c"});
-    bool result = is_realizable<ForwardSynthesis>(a_or_b, partition);
+    bool result = test_is_realizable(a_or_b, partition);
     REQUIRE(!result);
   }
   SECTION("left not-controllable, right controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(a_or_b, partition);
+    bool result = test_is_realizable(a_or_b, partition);
     REQUIRE(result);
   }
   SECTION("left controllable, right not-controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(a_or_b, partition);
+    bool result = test_is_realizable(a_or_b, partition);
     REQUIRE(result);
   }
   SECTION("left controllable, right controllable") {
     auto partition = InputOutputPartition({"c"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(a_or_b, partition);
+    bool result = test_is_realizable(a_or_b, partition);
     REQUIRE(result);
   }
 }
@@ -149,12 +150,12 @@ TEST_CASE("forward synthesis of 'X[!]a' (controllable)") {
 
   SECTION("body controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(next_a, partition);
+    bool result = test_is_realizable(next_a, partition);
     REQUIRE(result);
   }
   SECTION("body not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(next_a, partition);
+    bool result = test_is_realizable(next_a, partition);
     REQUIRE(!result);
   }
 }
@@ -166,12 +167,12 @@ TEST_CASE("forward synthesis of 'X a'") {
 
   SECTION("body controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(weak_next_a, partition);
+    bool result = test_is_realizable(weak_next_a, partition);
     REQUIRE(result);
   }
   SECTION("body not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(weak_next_a, partition);
+    bool result = test_is_realizable(weak_next_a, partition);
     REQUIRE(result);
   }
 }
@@ -184,12 +185,12 @@ TEST_CASE("forward synthesis of 'X a', non-empty trace") {
 
   SECTION("body controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("body not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
 }
@@ -201,22 +202,22 @@ TEST_CASE("forward synthesis of 'a U b'") {
 
   SECTION("head non-controllable, tail non-controllable") {
     auto partition = InputOutputPartition({"a", "b"}, {"c"});
-    bool result = is_realizable<ForwardSynthesis>(a_until_b, partition);
+    bool result = test_is_realizable(a_until_b, partition);
     REQUIRE(!result);
   }
   SECTION("head non-controllable, tail controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(a_until_b, partition);
+    bool result = test_is_realizable(a_until_b, partition);
     REQUIRE(result);
   }
   SECTION("head controllable, tail non-controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(a_until_b, partition);
+    bool result = test_is_realizable(a_until_b, partition);
     REQUIRE(!result);
   }
   SECTION("head controllable, tail controllable") {
     auto partition = InputOutputPartition({"c"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(a_until_b, partition);
+    bool result = test_is_realizable(a_until_b, partition);
     REQUIRE(result);
   }
 }
@@ -230,22 +231,22 @@ TEST_CASE("forward synthesis of 'a R b'") {
 
   SECTION("head non-controllable, tail non-controllable") {
     auto partition = InputOutputPartition({"a", "b"}, {"c"});
-    bool result = is_realizable<ForwardSynthesis>(a_release_b, partition);
+    bool result = test_is_realizable(a_release_b, partition);
     REQUIRE(result);
   }
   SECTION("head non-controllable, tail controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(a_release_b, partition);
+    bool result = test_is_realizable(a_release_b, partition);
     REQUIRE(result);
   }
   SECTION("head controllable, tail non-controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(a_release_b, partition);
+    bool result = test_is_realizable(a_release_b, partition);
     REQUIRE(result);
   }
   SECTION("head controllable, tail controllable") {
     auto partition = InputOutputPartition({"c"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(a_release_b, partition);
+    bool result = test_is_realizable(a_release_b, partition);
     REQUIRE(result);
   }
 }
@@ -257,12 +258,12 @@ TEST_CASE("forward synthesis of 'F a'") {
 
   SECTION("tail not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(eventually_a, partition);
+    bool result = test_is_realizable(eventually_a, partition);
     REQUIRE(!result);
   }
   SECTION("tail controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(eventually_a, partition);
+    bool result = test_is_realizable(eventually_a, partition);
     REQUIRE(result);
   }
 }
@@ -275,12 +276,12 @@ TEST_CASE("forward synthesis of 'G a'") {
 
   SECTION("tail not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(always_a, partition);
+    bool result = test_is_realizable(always_a, partition);
     REQUIRE(result);
   }
   SECTION("tail controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(always_a, partition);
+    bool result = test_is_realizable(always_a, partition);
     REQUIRE(result);
   }
 }
@@ -293,12 +294,12 @@ TEST_CASE("forward synthesis of 'G a', non-empty trace") {
 
   SECTION("tail not-controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
   SECTION("tail controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
 }
@@ -314,12 +315,12 @@ TEST_CASE("forward synthesis of 'G(a | !b)', non-empty trace") {
 
   SECTION("b controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
 }
@@ -333,12 +334,12 @@ TEST_CASE("forward synthesis of 'X(F(p0))'") {
   auto formula = context.make_and({next, not_end});
   SECTION("p0 uncontrollable") {
     auto partition = InputOutputPartition({"p0"}, {"p1"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("p0 controllable") {
     auto partition = InputOutputPartition({"p1"}, {"p0"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
 }
@@ -357,12 +358,12 @@ TEST_CASE("forward synthesis of '((a) & (X(~(a)))) | ((~(a)) & (X(a)))'") {
 
   SECTION("a uncontrollable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a controllable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
 }
@@ -378,22 +379,22 @@ TEST_CASE("forward synthesis of 'p0 R (F(p1))'") {
 
   SECTION("p0 controllable, p1 controllable") {
     auto partition = InputOutputPartition({"dummy"}, {"p0", "p1"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("p0 uncontrollable, p1 controllable") {
     auto partition = InputOutputPartition({"p0"}, {"p1"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("p0 controllable, p1 uncontrollable") {
     auto partition = InputOutputPartition({"p1"}, {"p0"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
   SECTION("p0 uncontrollable, p1 uncontrollable") {
     auto partition = InputOutputPartition({"p0", "p1"}, {"dummy"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
 }
@@ -412,22 +413,22 @@ TEST_CASE("forward synthesis of '(X(F(~b))) U (G(a))'") {
 
   SECTION("a controllable, b controllable") {
     auto partition = InputOutputPartition({"dummy"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a uncontrollable, b controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
   SECTION("a controllable, b uncontrollable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a uncontrollable, b uncontrollable") {
     auto partition = InputOutputPartition({"a", "b"}, {"dummy"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
 }
@@ -445,22 +446,22 @@ TEST_CASE("forward synthesis of 'G(b) U F(a)'") {
 
   SECTION("a controllable, b controllable") {
     auto partition = InputOutputPartition({"dummy"}, {"a", "b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a uncontrollable, b controllable") {
     auto partition = InputOutputPartition({"a"}, {"b"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
   SECTION("a controllable, b uncontrollable") {
     auto partition = InputOutputPartition({"b"}, {"a"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(result);
   }
   SECTION("a uncontrollable, b uncontrollable") {
     auto partition = InputOutputPartition({"a", "b"}, {"dummy"});
-    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    bool result = test_is_realizable(formula, partition);
     REQUIRE(!result);
   }
 }

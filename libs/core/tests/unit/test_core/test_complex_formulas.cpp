@@ -15,6 +15,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "core_test_utils.hpp"
 #include <catch.hpp>
 #include <nike/core.hpp>
 #include <nike/parser/driver.hpp>
@@ -34,7 +35,7 @@ TEST_CASE("forward synthesis of random formula 1") {
   auto not_end = temp->ctx().make_not_end();
   auto formula = temp->ctx().make_and({temp, not_end});
   auto partition = InputOutputPartition({"p5"}, {"p0", "p1", "p3", "p4"});
-  bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  bool result = test_is_realizable(formula, partition);
   REQUIRE(result);
 }
 
@@ -48,7 +49,7 @@ TEST_CASE("forward synthesis of random formula 2") {
   auto not_end = temp->ctx().make_not_end();
   auto formula = temp->ctx().make_and({temp, not_end});
   auto partition = InputOutputPartition({"p1", "p0", "p4"}, {"p3"});
-  bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  bool result = test_is_realizable(formula, partition);
   REQUIRE(result);
 }
 TEST_CASE("forward synthesis of random formula 3") {
@@ -61,7 +62,7 @@ TEST_CASE("forward synthesis of random formula 3") {
   auto not_end = temp->ctx().make_not_end();
   auto formula = temp->ctx().make_and({temp, not_end});
   auto partition = InputOutputPartition({"p5", "p3"}, {"p1", "p0", "p4"});
-  bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  bool result = test_is_realizable(formula, partition);
   REQUIRE(result);
 }
 TEST_CASE("forward synthesis of random formula 4") {
@@ -73,7 +74,7 @@ TEST_CASE("forward synthesis of random formula 4") {
   auto not_end = temp->ctx().make_not_end();
   auto formula = temp->ctx().make_and({temp, not_end});
   auto partition = InputOutputPartition({"p2", "p4"}, {"p1", "p0"});
-  bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  bool result = test_is_realizable(formula, partition);
   REQUIRE(result);
 }
 TEST_CASE("forward synthesis of random formula 5") {
@@ -85,7 +86,7 @@ TEST_CASE("forward synthesis of random formula 5") {
   auto not_end = temp->ctx().make_not_end();
   auto formula = temp->ctx().make_and({temp, not_end});
   auto partition = InputOutputPartition({"p0"}, {"dummy"});
-  bool result = is_realizable<ForwardSynthesis>(formula, partition);
+  bool result = test_is_realizable(formula, partition);
   REQUIRE(!result);
 }
 
