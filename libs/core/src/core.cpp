@@ -420,10 +420,8 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 }
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
-                                   const InputOutputPartition &partition,
-                                   bool use_gc, float gc_threshold)
-    : logger{"nike"}, formula{formula}, partition{partition}, use_gc{use_gc},
-      gc_threshold{gc_threshold},
+                                   const InputOutputPartition &partition)
+    : logger{"nike"}, formula{formula}, partition{partition},
       ast_manager{&formula->ctx()}, strategy{partition.output_variables} {
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);

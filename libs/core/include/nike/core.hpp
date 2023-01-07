@@ -76,19 +76,15 @@ public:
     std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
     utils::Logger logger;
     size_t indentation = 0;
-    bool use_gc;
-    float gc_threshold;
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
     size_t current_max_size_;
     bool maxSizeReached;
     Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition, bool use_gc = false,
-            float gc_threshold = 0.95);
+            const InputOutputPartition &partition);
     ~Context() {}
 
     logic::ltlf_ptr get_formula(size_t index) const;
-    void call_gc_vtree() const;
     template <typename Arg1, typename... Args>
     inline void print_search_debug(const char *fmt, const Arg1 &arg1,
                                    const Args &...args) const {
@@ -102,10 +98,8 @@ public:
     void initialie_maps_();
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
-                   const InputOutputPartition &partition,
-                   bool enable_gc = false)
-      : ISynthesis(formula, partition), context_{formula, partition,
-                                                 enable_gc} {};
+                   const InputOutputPartition &partition)
+      : ISynthesis(formula, partition), context_{formula, partition} {};
 
   static std::map<std::string, size_t>
   compute_prop_to_id_map(const Closure &closure,
