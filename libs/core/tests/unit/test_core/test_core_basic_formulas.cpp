@@ -432,6 +432,39 @@ TEST_CASE("forward synthesis of '(X(F(~b))) U (G(a))'") {
   }
 }
 
+TEST_CASE("forward synthesis of 'G(b) U F(a)'") {
+  utils::Logger::level(utils::LogLevel::debug);
+  auto context = std::make_shared<logic::Context>();
+  auto a = context->make_atom("a");
+  auto b = context->make_atom("b");
+  auto not_end = context->make_not(context->make_end());
+  auto always_b = context->make_eventually(b);
+  auto eventually_a = context->make_eventually(a);
+  auto until = context->make_until({always_b, eventually_a});
+  auto formula = context->make_and({until, not_end});
+
+  SECTION("a controllable, b controllable") {
+    auto partition = InputOutputPartition({"dummy"}, {"a", "b"});
+    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    REQUIRE(result);
+  }
+  SECTION("a uncontrollable, b controllable") {
+    auto partition = InputOutputPartition({"a"}, {"b"});
+    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    REQUIRE(!result);
+  }
+  SECTION("a controllable, b uncontrollable") {
+    auto partition = InputOutputPartition({"b"}, {"a"});
+    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    REQUIRE(result);
+  }
+  SECTION("a uncontrollable, b uncontrollable") {
+    auto partition = InputOutputPartition({"a", "b"}, {"dummy"});
+    bool result = is_realizable<ForwardSynthesis>(formula, partition);
+    REQUIRE(!result);
+  }
+}
+
 } // namespace Test
 } // namespace core
 } // namespace nike
