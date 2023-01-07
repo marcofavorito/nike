@@ -34,42 +34,6 @@
 namespace nike {
 namespace core {
 
-std::string mode_to_string(StateEquivalenceMode mode) {
-  switch (mode) {
-  case StateEquivalenceMode::HASH:
-    return "hash";
-  case StateEquivalenceMode::BDD:
-    return "bdd";
-  }
-}
-
-bool TrueFirstBranchVariable::choose(std::string varname) {
-  if (seen.find(varname) == seen.end()) {
-    seen.insert(varname);
-    return true;
-  }
-  return false;
-}
-
-void TrueFirstBranchVariable::reset() { seen.clear(); }
-
-bool FalseFirstBranchVariable::choose(std::string varname) {
-  if (seen.find(varname) == seen.end()) {
-    seen.insert(varname);
-    return false;
-  }
-  return true;
-}
-void FalseFirstBranchVariable::reset() { seen.clear(); }
-
-bool RandomBranchVariable::choose(std::string varname) {
-  return (rand() % 2) == 0;
-}
-
-ISynthesis::ISynthesis(const logic::ltlf_ptr &formula,
-                       const InputOutputPartition &partition)
-    : formula{formula}, partition{partition} {}
-
 bool ForwardSynthesis::is_realizable() {
   bool result = ids_forward_synthesis_();
   return result;

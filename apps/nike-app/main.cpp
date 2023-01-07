@@ -16,11 +16,12 @@
  */
 
 #include <nike/core.hpp>
+#include <nike/core_base.hpp>
 #include <nike/parser/driver.hpp>
 #include <sstream>
-#include <string>
 
 #include <CLI/CLI.hpp>
+#include <string>
 
 enum BranchingStrategy { TRUE_FIRST, FALSE_FIRST, RANDOM };
 

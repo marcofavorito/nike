@@ -18,6 +18,7 @@
 
 #include <cuddObj.hh>
 #include <nike/closure.hpp>
+#include <nike/core_base.hpp>
 #include <nike/graph.hpp>
 #include <nike/input_output_partition.hpp>
 #include <nike/logger.hpp>
@@ -29,61 +30,10 @@
 namespace nike {
 namespace core {
 
-enum StateEquivalenceMode { HASH = 0, BDD = 1 };
-
-std::string mode_to_string(StateEquivalenceMode mode);
-
 class max_formula_size_reached : public std::logic_error {
 public:
   explicit max_formula_size_reached(const std::string &reason)
       : std::logic_error(reason) {}
-};
-
-class ISynthesis {
-public:
-  const logic::ltlf_ptr formula;
-  const InputOutputPartition partition;
-  ISynthesis(const logic::ltlf_ptr &formula,
-             const InputOutputPartition &partition);
-  virtual bool is_realizable() = 0;
-};
-
-template <class Synthesis,
-          typename = typename std::enable_if<
-              std::is_base_of<ISynthesis, Synthesis>::value>::type,
-          typename... Args>
-bool is_realizable(const logic::ltlf_ptr &formula,
-                   InputOutputPartition &partition, Args &...args) {
-  auto synthesis = Synthesis(formula, partition, args...);
-  return synthesis.is_realizable();
-}
-
-class BranchVariable {
-public:
-  virtual bool choose(std::string varname) = 0;
-  virtual void reset(){};
-  virtual ~BranchVariable() = default;
-};
-
-class TrueFirstBranchVariable : public BranchVariable {
-private:
-  std::set<std::string> seen;
-
-public:
-  bool choose(std::string varname) override;
-  void reset() override;
-};
-class FalseFirstBranchVariable : public BranchVariable {
-private:
-  std::set<std::string> seen;
-
-public:
-  bool choose(std::string varname) override;
-  void reset() override;
-};
-class RandomBranchVariable : public BranchVariable {
-public:
-  bool choose(std::string varname) override;
 };
 
 class ForwardSynthesis : public ISynthesis {

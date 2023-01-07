@@ -16,6 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "core_base.hpp"
 #include <nike/core.hpp>
 #include <nike/input_output_partition.hpp>
 #include <nike/logic/types.hpp>

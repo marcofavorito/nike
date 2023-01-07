@@ -16,10 +16,11 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <optional>
+
 #include <cuddObj.hh>
 #include <nike/core.hpp>
 #include <nike/logic/visitor.hpp>
-#include <optional>
 
 namespace nike {
 namespace core {
