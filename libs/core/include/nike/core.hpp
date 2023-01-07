@@ -62,6 +62,7 @@ class BranchVariable {
 public:
   virtual bool choose(std::string varname) = 0;
   virtual void reset(){};
+  virtual ~BranchVariable() = default;
 };
 
 class TrueFirstBranchVariable : public BranchVariable {
