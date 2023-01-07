@@ -16,7 +16,6 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "strategy.hpp"
 #include <cuddObj.hh>
 #include <nike/closure.hpp>
 #include <nike/graph.hpp>
@@ -25,6 +24,7 @@
 #include <nike/logic/types.hpp>
 #include <nike/path.hpp>
 #include <nike/statistics.hpp>
+#include <nike/strategy.hpp>
 
 namespace nike {
 namespace core {

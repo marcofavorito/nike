@@ -20,7 +20,6 @@
 #include <nike/eval.hpp>
 #include <nike/logic/atom_visitor.hpp>
 #include <nike/logic/nnf.hpp>
-#include <nike/logic/print.hpp>
 #include <nike/logic/replace.hpp>
 #include <nike/logic/size.hpp>
 #include <nike/one_step_realizability.hpp>
@@ -87,15 +86,10 @@ bool ForwardSynthesis::forward_synthesis_() {
 
   context_.logger.info("Starting the search...");
 
-  //  auto root_sdd_node = to_sdd(*context_.xnf_formula, context_);
-  //  auto bdd_formula_id = sdd_id(root_sdd_node);
   context_.logger.info("Starting first system move...");
   auto is_realizable = system_move_(context_.xnf_formula);
-  //  bool result = strategy[bdd_formula_id] !=
-  //  sdd_manager_false(context_.manager);
   context_.logger.info("Explored states: {}",
                        context_.statistics_.nb_visited_nodes());
-  //  return result;
   return is_realizable;
 }
 
