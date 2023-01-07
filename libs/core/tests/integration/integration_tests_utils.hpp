@@ -357,8 +357,7 @@ static const std::map<size_t, bool> case_05_50_realizability = {
     {46, false}, {47, false}, {48, true},  {49, false}, {50, true},
 };
 static const std::set<size_t> case_05_50_tractable_instances = {
-    4,  7,  9,  13, 15, 16, 17, 20, 21, 25, 27,
-    28, 30, 31, 32, 33, 35, 36, 40, 41, 43, 44};
+    7, 9, 13, 15, 16, 17, 20, 21, 25, 27, 30, 31, 33, 35, 36, 40, 41, 43, 44};
 
 struct is_case_05_50_problem_realizable {
   SynthesisResult operator()(size_t index, const std::filesystem::path &formula,
