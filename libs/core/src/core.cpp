@@ -248,34 +248,36 @@ bool ForwardSynthesis::find_system_move(
   auto symbol = controllableVars[0];
   std::string varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  context_.print_search_debug("branch on system variable {} (true)", varname);
+  bool v = rand() % 2 != 0;
+  context_.print_search_debug("branch on system variable {} ({})", varname,
+                              std::to_string(v));
 
-  auto v = (bool)rand() % 2;
   auto pl_formula_true = logic::replace({{symbol, v}}, *pl_formula);
   partial_system_move.emplace(varname, VarValues::TRUE);
   result = find_system_move(formula_id, pl_formula_true, partial_system_move);
   if (result) {
-    context_.print_search_debug("branch on system variable {} (true) SUCCESS",
-                                varname);
+    context_.print_search_debug("branch on system variable {} ({}) SUCCESS",
+                                varname, std::to_string(v));
     return true;
   }
   partial_system_move.pop();
 
   // set variable to 'false'
-  context_.print_search_debug("branch on system variable {} (true) FAILURE",
-                              varname);
-  context_.print_search_debug("branch on system variable {} (false)", varname);
+  context_.print_search_debug("branch on system variable {} ({}) FAILURE",
+                              varname, std::to_string(v));
+  context_.print_search_debug("branch on system variable {} ({})", varname,
+                              std::to_string(not v));
   auto pl_formula_false = logic::replace({{symbol, not v}}, *pl_formula);
   partial_system_move.emplace(varname, VarValues::FALSE);
   result = find_system_move(formula_id, pl_formula_false, partial_system_move);
   if (result) {
-    context_.print_search_debug("branch on system variable {} (false) SUCCESS",
-                                varname);
+    context_.print_search_debug("branch on system variable {} ({}) SUCCESS",
+                                varname, std::to_string(not v));
     return true;
   }
   partial_system_move.pop();
-  context_.print_search_debug("branch on system variable {} (false) FAILURE",
-                              varname);
+  context_.print_search_debug("branch on system variable {} ({}) FAILURE",
+                              varname, std::to_string(not v));
   return false;
 }
 
@@ -309,29 +311,32 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
   auto symbol = envVars[0];
   auto varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  context_.print_search_debug("branch on env variable {} (true)", varname);
+  bool v = rand() % 2 != 0;
+  context_.print_search_debug("branch on env variable {} ({})", varname,
+                              std::to_string(v));
 
-  auto pl_formula_true = logic::replace({{symbol, true}}, *pl_formula);
+  auto pl_formula_true = logic::replace({{symbol, v}}, *pl_formula);
   result = find_env_move_(pl_formula_true);
   if (!result) {
-    context_.print_search_debug("branch on env variable {} (true) FAILURE",
-                                varname);
+    context_.print_search_debug("branch on env variable {} ({}) FAILURE",
+                                varname, std::to_string(v));
     return false;
   }
   // if not, try the other env move
   // set variable to 'false'
-  context_.print_search_debug("branch on env variable {} (true) SUCCESS",
-                              varname);
-  context_.print_search_debug("branch on env variable {} (false)", varname);
-  auto pl_formula_false = logic::replace({{symbol, false}}, *pl_formula);
+  context_.print_search_debug("branch on env variable {} ({}) SUCCESS", varname,
+                              std::to_string(v));
+  context_.print_search_debug("branch on env variable {} ({})", varname,
+                              std::to_string(not v));
+  auto pl_formula_false = logic::replace({{symbol, not v}}, *pl_formula);
   result = find_env_move_(pl_formula_false);
   if (!result) {
-    context_.print_search_debug("branch on env variable {} (false) FAILURE",
-                                varname);
+    context_.print_search_debug("branch on env variable {} ({}) FAILURE",
+                                varname, std::to_string(not v));
     return false;
   }
-  context_.print_search_debug("branch on env variable {} (false) SUCCESS",
-                              varname);
+  context_.print_search_debug("branch on env variable {} ({}) SUCCESS", varname,
+                              std::to_string(not v));
   return true;
 }
 
