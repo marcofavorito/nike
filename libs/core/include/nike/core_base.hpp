@@ -50,25 +50,16 @@ bool is_realizable(const logic::ltlf_ptr &formula,
 class BranchVariable {
 public:
   virtual bool choose(std::string varname) = 0;
-  virtual void reset(){};
   virtual ~BranchVariable() = default;
 };
 
 class TrueFirstBranchVariable : public BranchVariable {
-private:
-  std::set<std::string> seen;
-
 public:
   bool choose(std::string varname) override;
-  void reset() override;
 };
 class FalseFirstBranchVariable : public BranchVariable {
-private:
-  std::set<std::string> seen;
-
 public:
   bool choose(std::string varname) override;
-  void reset() override;
 };
 class RandomBranchVariable : public BranchVariable {
 public:

@@ -29,24 +29,9 @@ std::string mode_to_string(StateEquivalenceMode mode) {
   }
 }
 
-bool TrueFirstBranchVariable::choose(std::string varname) {
-  if (seen.find(varname) == seen.end()) {
-    seen.insert(varname);
-    return true;
-  }
-  return false;
-}
+bool TrueFirstBranchVariable::choose(std::string varname) { return true; }
 
-void TrueFirstBranchVariable::reset() { seen.clear(); }
-
-bool FalseFirstBranchVariable::choose(std::string varname) {
-  if (seen.find(varname) == seen.end()) {
-    seen.insert(varname);
-    return false;
-  }
-  return true;
-}
-void FalseFirstBranchVariable::reset() { seen.clear(); }
+bool FalseFirstBranchVariable::choose(std::string varname) { return false; }
 
 bool RandomBranchVariable::choose(std::string varname) {
   return (rand() % 2) == 0;

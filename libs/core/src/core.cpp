@@ -35,6 +35,10 @@ namespace nike {
 namespace core {
 
 bool ForwardSynthesis::is_realizable() {
+  if (context_.mode == StateEquivalenceMode::BDD) {
+    return forward_synthesis_();
+  }
+  // equivalence mode HASH
   bool result = ids_forward_synthesis_();
   return result;
 }
