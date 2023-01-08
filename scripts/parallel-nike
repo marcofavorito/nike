@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+import argparse
+import asyncio
+import functools
+import inspect
+from asyncio.subprocess import Process
+from enum import Enum
+from operator import attrgetter
+from pathlib import Path
+from typing import Callable
+
+CUR_PATH = Path(inspect.getfile(inspect.currentframe())).parent  # type: ignore
+ROOT_DIR = Path(CUR_PATH, "..").resolve().absolute()
+NIKE_BINARY = ROOT_DIR / "build" / "apps" / "nike-app" / "nike-app"
+
+
+class BranchingStrategy(Enum):
+    TRUE_FIRST = "true-first"
+    FALSE_FIRST = "false-first"
+    RANDOM = "random"
+
+
+class StateCheckingMode(Enum):
+    HASH = "hash"
+    BDD = "bdd"
+
+
+def compose(*fs: Callable) -> Callable:
+    """
+    Compose a sequence of callables.
+    :param fs: the sequence of callables.
+    :return: the composition of the callables.
+    """
+
+    def _compose(f: Callable, g: Callable) -> Callable:
+        return lambda *args, **kwargs: f(g(*args, **kwargs))
+
+    return functools.reduce(_compose, fs)
+
+
+def check_path_exists(path: Path) -> Path:
+    """
+    Check that the path exists.
+    :param path: the path object
+    :return: the argument
+    """
+    path = Path(path).resolve()
+    if not path.exists():
+        raise argparse.ArgumentTypeError(f"path {path} does not exist")
+    return path
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bin-path", type=compose(Path.resolve, check_path_exists, Path), default=NIKE_BINARY, help="path to nike binary")
+    parser.add_argument("-m", "--mode", type=str, choices=list(map(attrgetter("value"), StateCheckingMode)), default="hash", help="state equivalence checking mode")
+    parser.add_argument("--no-empty", action="store_true", help="no empty trace")
+    parser.add_argument("--file", required=True, type=compose(Path.resolve, check_path_exists, Path), help="path to formula file")
+    parser.add_argument("--part", required=True, type=compose(Path.resolve, check_path_exists, Path), help="path to part file")
+    return parser.parse_args()
+
+
+async def main(bin_path: Path, mode: StateCheckingMode, no_empty: bool, filepath: Path, partpath: Path):
+    processes = []
+    for i, strategy in enumerate(list(BranchingStrategy)):
+        args = [str(bin_path), "--mode", mode.value, "-s", str(strategy.value), "--file", str(filepath), "--part", str(partpath), "--name", f"run-{i}"]
+        if no_empty:
+            args += ["--no-empty"]
+        process = await asyncio.create_subprocess_exec(*args)
+        processes.append(process)
+
+    tasks_to_process = {asyncio.create_task(p.wait()): p for p in processes}
+    done, pending = await asyncio.wait(tasks_to_process.keys(), return_when=asyncio.FIRST_COMPLETED)
+    assert len(done) > 0
+    task = next(iter(done))
+    done_process = tasks_to_process[task]
+    for pending_task in pending:
+        pending_process: Process = tasks_to_process[pending_task]
+        pending_process.terminate()
+    for pending_task in pending:
+        pending_process: Process = tasks_to_process[pending_task]
+        await pending_process.wait()
+
+
+if __name__ == '__main__':
+    arguments = parse_args()
+    asyncio.run(main(arguments.bin_path, StateCheckingMode(arguments.mode), arguments.no_empty, arguments.file, arguments.part))
