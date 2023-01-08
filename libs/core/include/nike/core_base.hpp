@@ -66,5 +66,12 @@ public:
   bool choose(std::string varname) override;
 };
 
+enum BranchingStrategy { TRUE_FIRST, FALSE_FIRST, RANDOM };
+
+std::string branching_strategy_to_string(BranchingStrategy bs);
+
+std::unique_ptr<nike::core::BranchVariable>
+get_branching_strategy(BranchingStrategy bs_id);
+
 } // namespace core
 } // namespace nike

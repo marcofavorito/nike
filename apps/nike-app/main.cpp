@@ -17,36 +17,12 @@
 
 #include <nike/core.hpp>
 #include <nike/core_base.hpp>
+#include <nike/multithreaded.hpp>
 #include <nike/parser/driver.hpp>
 #include <sstream>
 
 #include <CLI/CLI.hpp>
 #include <string>
-
-enum BranchingStrategy { TRUE_FIRST, FALSE_FIRST, RANDOM };
-
-std::string branching_strategy_to_string(BranchingStrategy bs) {
-  switch (bs) {
-  case BranchingStrategy::TRUE_FIRST:
-    return "true-first";
-  case BranchingStrategy::FALSE_FIRST:
-    return "false-first";
-  case BranchingStrategy::RANDOM:
-    return "random";
-  }
-}
-
-std::unique_ptr<nike::core::BranchVariable>
-get_branching_strategy(BranchingStrategy bs_id) {
-  switch (bs_id) {
-  case BranchingStrategy::TRUE_FIRST:
-    return std::make_unique<nike::core::TrueFirstBranchVariable>();
-  case BranchingStrategy::FALSE_FIRST:
-    return std::make_unique<nike::core::FalseFirstBranchVariable>();
-  case BranchingStrategy::RANDOM:
-    return std::make_unique<nike::core::RandomBranchVariable>();
-  }
-}
 
 int main(int argc, char **argv) {
   nike::utils::Logger logger("main");
@@ -60,6 +36,8 @@ int main(int argc, char **argv) {
   app.add_flag("-V,--version", version, "Print the version and exit.");
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Set verbose mode.");
+  bool multithreaded = false;
+  app.add_flag("-t,--multithreaded", multithreaded, "Multithreaded mode.");
 
   std::map<std::string, nike::core::StateEquivalenceMode> map{
       {nike::core::mode_to_string(nike::core::StateEquivalenceMode::BDD),
@@ -70,23 +48,22 @@ int main(int argc, char **argv) {
   nike::core::StateEquivalenceMode mode;
   app.add_option("-m,--mode", mode, "The mode to use.")
       ->transform(CLI::CheckedTransformer(map, CLI::ignore_case))
-      ->default_str(
-          nike::core::mode_to_string(nike::core::StateEquivalenceMode::HASH));
+      ->required();
 
-  std::map<std::string, BranchingStrategy> branching_strategy_map{
-      {branching_strategy_to_string(BranchingStrategy::TRUE_FIRST),
-       BranchingStrategy::TRUE_FIRST},
-      {branching_strategy_to_string(BranchingStrategy::FALSE_FIRST),
-       BranchingStrategy::FALSE_FIRST},
-      {branching_strategy_to_string(BranchingStrategy::RANDOM),
-       BranchingStrategy::RANDOM},
+  std::map<std::string, nike::core::BranchingStrategy> branching_strategy_map{
+      {branching_strategy_to_string(nike::core::BranchingStrategy::TRUE_FIRST),
+       nike::core::BranchingStrategy::TRUE_FIRST},
+      {branching_strategy_to_string(nike::core::BranchingStrategy::FALSE_FIRST),
+       nike::core::BranchingStrategy::FALSE_FIRST},
+      {branching_strategy_to_string(nike::core::BranchingStrategy::RANDOM),
+       nike::core::BranchingStrategy::RANDOM},
   };
-  BranchingStrategy branching_strategy_id;
+  nike::core::BranchingStrategy branching_strategy_id;
   app.add_option("-s,--strategy", branching_strategy_id,
                  "The branching strategy to use.")
+      ->required()
       ->transform(
-          CLI::CheckedTransformer(branching_strategy_map, CLI::ignore_case))
-      ->default_str(branching_strategy_to_string(BranchingStrategy::RANDOM));
+          CLI::CheckedTransformer(branching_strategy_map, CLI::ignore_case));
 
   // options & flags
   std::string filename;
@@ -148,9 +125,15 @@ int main(int argc, char **argv) {
 
   auto t_start = std::chrono::high_resolution_clock::now();
 
-  auto b = get_branching_strategy(branching_strategy_id);
-  bool result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
-      parsed_formula, partition, *b, mode);
+  bool result;
+  if (multithreaded) {
+    result = nike::core::is_realizable<nike::core::MultithreadedSynthesis>(
+        parsed_formula, partition);
+  } else {
+    result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
+        parsed_formula, partition, branching_strategy_id, mode);
+  }
+
   if (result)
     logger.info("realizable.");
   else

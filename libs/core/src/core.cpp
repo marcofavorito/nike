@@ -30,6 +30,7 @@
 #include <nike/to_pl.hpp>
 #include <nike/xnf.hpp>
 #include <queue>
+#include <utility>
 
 namespace nike {
 namespace core {
@@ -62,7 +63,10 @@ bool ForwardSynthesis::ids_forward_synthesis_() {
 }
 
 bool ForwardSynthesis::forward_synthesis_() {
-
+  check_stopped();
+  context_.logger.info(
+      "Started synthesis with mode {} and branching strategy {}",
+      mode_to_string(context_.mode), branching_strategy_to_string(context_.bs));
   context_.logger.info("Check zero-step realizability");
   if (eval(*context_.nnf_formula)) {
     context_.logger.info("Zero-step realizability check successful");
@@ -106,6 +110,7 @@ std::map<std::string, size_t> ForwardSynthesis::compute_prop_to_id_map(
   return result;
 }
 bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
+  check_stopped();
   context_.indentation += 1;
 
   //  context_.print_search_debug("Formula: {}", logic::to_string(*formula));
@@ -214,6 +219,7 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
 bool ForwardSynthesis::find_system_move(
     const size_t &formula_id, const logic::pl_ptr &pl_formula,
     std::stack<std::pair<std::string, VarValues>> &partial_system_move) {
+  check_stopped();
   bool result;
   auto allVars = logic::find_atoms(*pl_formula);
   std::vector<logic::ast_ptr> controllableVars;
@@ -238,7 +244,7 @@ bool ForwardSynthesis::find_system_move(
   auto symbol = controllableVars[0];
   std::string varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  bool v = context_.branch_variable.choose(varname);
+  bool v = context_.branch_variable->choose(varname);
   context_.print_search_debug("branch on system variable {} ({})", varname,
                               std::to_string(v));
 
@@ -272,6 +278,7 @@ bool ForwardSynthesis::find_system_move(
 }
 
 bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
+  check_stopped();
   bool result;
   auto allVars = logic::find_atoms(*pl_formula);
   std::vector<logic::ast_ptr> envVars;
@@ -299,7 +306,7 @@ bool ForwardSynthesis::find_env_move_(const logic::pl_ptr &pl_formula) {
   auto symbol = envVars[0];
   auto varname =
       std::static_pointer_cast<const logic::StringSymbol>(symbol)->name;
-  bool v = context_.branch_variable.choose(varname);
+  bool v = context_.branch_variable->choose(varname);
   context_.print_search_debug("branch on env variable {} ({})", varname,
                               std::to_string(v));
 
@@ -349,6 +356,7 @@ size_t ForwardSynthesis::get_state_id(const logic::ltlf_ptr &formula) {
 }
 
 bool ForwardSynthesis::env_move_(const logic::pl_ptr &pl_formula) {
+  check_stopped();
   context_.indentation += 1;
   auto formula = logic::to_ltlf(*pl_formula);
   auto bdd_formula_id = get_state_id(formula);
@@ -417,12 +425,13 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 
 ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
-                                   BranchVariable &branch_variable,
+                                   BranchingStrategy bs,
                                    StateEquivalenceMode mode,
-                                   double max_size_factor)
-    : logger{"nike"}, formula{formula}, partition{partition},
-      ast_manager{&formula->ctx()}, strategy{partition.output_variables},
-      branch_variable{branch_variable}, mode{mode} {
+                                   double max_size_factor,
+                                   std::string logger_section_name)
+    : logger{std::move(logger_section_name)}, formula{formula},
+      partition{partition}, ast_manager{&formula->ctx()},
+      strategy{partition.output_variables}, bs{bs}, mode{mode} {
 
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
@@ -433,8 +442,10 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
   manager_.AutodynEnable();
   prop_to_id = compute_prop_to_id_map(closure_, partition);
   statistics_ = Statistics();
+  branch_variable = get_branching_strategy(bs);
   initialie_maps_();
 }
+
 void ForwardSynthesis::Context::initialie_maps_() {
   const auto nb_variables = closure_.nb_formulas() + closure_.nb_atoms();
   controllable_map =
@@ -459,5 +470,25 @@ void ForwardSynthesis::Context::initialie_maps_() {
     }
   }
 }
+
+void ForwardSynthesis::register_termination_callback(DD_THFP callback,
+                                                     void *callback_arg) const {
+  context_.manager_.RegisterTerminationCallback(callback, callback_arg);
+}
+
+void ForwardSynthesis::stop() {
+  context_.logger.info("called 'stop'");
+  context_.stopped = true;
+}
+
+bool ForwardSynthesis::is_stopped() const { return context_.stopped; }
+
+inline void ForwardSynthesis::check_stopped() {
+  if (context_.stopped) {
+    context_.logger.info("interrupted");
+    throw interrupted_exception();
+  }
+}
+
 } // namespace core
 } // namespace nike

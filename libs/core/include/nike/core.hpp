@@ -26,6 +26,7 @@
 #include <nike/path.hpp>
 #include <nike/statistics.hpp>
 #include <nike/strategy.hpp>
+#include <utility>
 
 namespace nike {
 namespace core {
@@ -35,14 +36,18 @@ public:
   explicit max_formula_size_reached(const std::string &reason)
       : std::logic_error(reason) {}
 };
+class interrupted_exception : public std::exception {
+public:
+  explicit interrupted_exception() : std::exception() {}
+};
 
 class ForwardSynthesis : public ISynthesis {
 public:
   class Context {
   public:
     logic::ltlf_ptr formula;
-    logic::Context *ast_manager;
     InputOutputPartition partition;
+    logic::Context *ast_manager;
     logic::ltlf_ptr nnf_formula;
     logic::ltlf_ptr xnf_formula;
     Closure closure_;
@@ -61,12 +66,14 @@ public:
     std::vector<int> controllable_map;
     std::vector<int> uncontrollable_map;
     size_t current_max_size_;
-    BranchVariable &branch_variable;
+    std::unique_ptr<BranchVariable> branch_variable;
     StateEquivalenceMode mode;
+    BranchingStrategy bs;
+    bool stopped = false;
     Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition,
-            BranchVariable &branch_variable, StateEquivalenceMode mode,
-            double max_size_factor = 3.0);
+            const InputOutputPartition &partition, BranchingStrategy bs,
+            StateEquivalenceMode mode, double max_size_factor = 3.0,
+            std::string logger_section_name = "nike");
     ~Context() = default;
 
     template <typename Arg1, typename... Args>
@@ -83,29 +90,33 @@ public:
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,
-                   BranchVariable &branch_variable,
+                   BranchingStrategy bs = BranchingStrategy::RANDOM,
                    StateEquivalenceMode mode = StateEquivalenceMode::HASH,
+                   std::string logger_section_name = "nike",
                    double max_size_factor = 3.0)
-      : ISynthesis(formula, partition), context_{formula, partition,
-                                                 branch_variable, mode,
-                                                 max_size_factor} {};
-
-  static std::map<std::string, size_t>
-  compute_prop_to_id_map(const Closure &closure,
-                         const InputOutputPartition &partition);
+      : ISynthesis(formula, partition),
+        context_{formula, partition,       bs,
+                 mode,    max_size_factor, std::move(logger_section_name)} {};
   bool is_realizable() override;
-
-  bool forward_synthesis_();
-  bool ids_forward_synthesis_();
-
-  long get_bdd_id(CUDD::BDD node) {
-    return reinterpret_cast<std::intptr_t>(node.getNode());
-  }
+  void register_termination_callback(DD_THFP callback,
+                                     void *callback_arg) const;
+  void stop();
+  bool is_stopped() const;
 
 private:
   Context context_;
   size_t get_state_id(const logic::ltlf_ptr &formula);
 
+  static std::map<std::string, size_t>
+  compute_prop_to_id_map(const Closure &closure,
+                         const InputOutputPartition &partition);
+  long get_bdd_id(CUDD::BDD node) {
+    return reinterpret_cast<std::intptr_t>(node.getNode());
+  }
+
+  inline void check_stopped();
+  bool forward_synthesis_();
+  bool ids_forward_synthesis_();
   bool system_move_(const logic::ltlf_ptr &formula);
   bool env_move_(const logic::pl_ptr &pl_formula);
   bool find_env_move_(const logic::pl_ptr &pl_formula);

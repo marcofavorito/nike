@@ -16,8 +16,8 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "core_base.hpp"
 #include <nike/core.hpp>
+#include <nike/core_base.hpp>
 #include <nike/input_output_partition.hpp>
 #include <nike/logic/types.hpp>
 
@@ -25,7 +25,7 @@ namespace nike::core::Test {
 
 inline bool test_is_realizable(const nike::logic::ltlf_ptr &formula,
                                InputOutputPartition &partition) {
-  auto b = RandomBranchVariable();
+  auto b = BranchingStrategy::RANDOM;
   auto mode = StateEquivalenceMode::HASH;
   return nike::core::is_realizable<nike::core::ForwardSynthesis>(
       formula, partition, b, mode);

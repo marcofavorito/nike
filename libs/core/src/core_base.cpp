@@ -41,5 +41,28 @@ ISynthesis::ISynthesis(const logic::ltlf_ptr &formula,
                        const InputOutputPartition &partition)
     : formula{formula}, partition{partition} {}
 
+std::string branching_strategy_to_string(BranchingStrategy bs) {
+  switch (bs) {
+  case BranchingStrategy::TRUE_FIRST:
+    return "true-first";
+  case BranchingStrategy::FALSE_FIRST:
+    return "false-first";
+  case BranchingStrategy::RANDOM:
+    return "random";
+  }
+}
+
+std::unique_ptr<nike::core::BranchVariable>
+get_branching_strategy(BranchingStrategy bs_id) {
+  switch (bs_id) {
+  case BranchingStrategy::TRUE_FIRST:
+    return std::make_unique<nike::core::TrueFirstBranchVariable>();
+  case BranchingStrategy::FALSE_FIRST:
+    return std::make_unique<nike::core::FalseFirstBranchVariable>();
+  case BranchingStrategy::RANDOM:
+    return std::make_unique<nike::core::RandomBranchVariable>();
+  }
+}
+
 } // namespace core
 } // namespace nike
