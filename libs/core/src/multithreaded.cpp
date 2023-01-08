@@ -57,8 +57,8 @@ void ThreadedForwardSynthesis::stop() { syn->stop(); }
 void ThreadedForwardSynthesis::join() { t.join(); }
 
 bool MultithreadedSynthesis::is_realizable() {
-  std::vector<StateEquivalenceMode> modes{
-      StateEquivalenceMode::HASH}; //, StateEquivalenceMode::BDD};
+  std::vector<StateEquivalenceMode> modes{StateEquivalenceMode::HASH,
+                                          StateEquivalenceMode::BDD};
 
   std::vector<BranchingStrategy> bs{
       BranchingStrategy::TRUE_FIRST,

@@ -95,10 +95,6 @@ int main(int argc, char **argv) {
     nike::utils::Logger::level(nike::utils::LogLevel::debug);
   }
 
-  logger.info("Using synthesis mode '{}'", nike::core::mode_to_string(mode));
-  logger.info("Using branching strategy '{}'",
-              branching_strategy_to_string(branching_strategy_id));
-
   auto driver = nike::parser::ltlf::LTLfDriver();
   if (!file_opt->empty()) {
     logger.info("Parsing {}", filename);
@@ -127,9 +123,17 @@ int main(int argc, char **argv) {
 
   bool result;
   if (multithreaded) {
+    logger.warning(
+        "multithreaded mode selected. Ignoring mode '{}' and strategy '{}'",
+        nike::core::mode_to_string(mode),
+        nike::core::branching_strategy_to_string(branching_strategy_id));
     result = nike::core::is_realizable<nike::core::MultithreadedSynthesis>(
         parsed_formula, partition);
   } else {
+    logger.info("Using synthesis mode '{}'", nike::core::mode_to_string(mode));
+    logger.info("Using branching strategy '{}'",
+                branching_strategy_to_string(branching_strategy_id));
+
     result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
         parsed_formula, partition, branching_strategy_id, mode);
   }
