@@ -29,7 +29,8 @@ enum class LogLevel {
   info = spdlog::level::level_enum::info,
   trace = spdlog::level::level_enum::trace,
   debug = spdlog::level::level_enum::debug,
-  error = spdlog::level::level_enum::err
+  warning = spdlog::level::level_enum::warn,
+  error = spdlog::level::level_enum::err,
 };
 
 class Logger {
@@ -76,6 +77,14 @@ public:
     trace("{}", arg1);
   }
 
+  template <typename Arg1, typename... Args>
+  void warning(const char *fmt, const Arg1 &arg1, const Args &...args) const {
+    log(LogLevel::warning, fmt, arg1, args...);
+  }
+
+  template <typename Arg1> void warning(const Arg1 &arg1) const {
+    warning("{}", arg1);
+  }
   template <typename Arg1, typename... Args>
   void error(const char *fmt, const Arg1 &arg1, const Args &...args) const {
     log(LogLevel::error, fmt, arg1, args...);
