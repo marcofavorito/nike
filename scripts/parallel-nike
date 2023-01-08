@@ -53,25 +53,67 @@ def check_path_exists(path: Path) -> Path:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bin-path", type=compose(Path.resolve, check_path_exists, Path), default=NIKE_BINARY, help="path to nike binary")
-    parser.add_argument("-m", "--mode", type=str, choices=list(map(attrgetter("value"), StateCheckingMode)), default="hash", help="state equivalence checking mode")
+    parser.add_argument(
+        "--bin-path",
+        type=compose(Path.resolve, check_path_exists, Path),
+        default=NIKE_BINARY,
+        help="path to nike binary",
+    )
+    parser.add_argument(
+        "-m",
+        "--mode",
+        type=str,
+        choices=list(map(attrgetter("value"), StateCheckingMode)),
+        default="hash",
+        help="state equivalence checking mode",
+    )
     parser.add_argument("--no-empty", action="store_true", help="no empty trace")
-    parser.add_argument("--file", required=True, type=compose(Path.resolve, check_path_exists, Path), help="path to formula file")
-    parser.add_argument("--part", required=True, type=compose(Path.resolve, check_path_exists, Path), help="path to part file")
+    parser.add_argument(
+        "--file",
+        required=True,
+        type=compose(Path.resolve, check_path_exists, Path),
+        help="path to formula file",
+    )
+    parser.add_argument(
+        "--part",
+        required=True,
+        type=compose(Path.resolve, check_path_exists, Path),
+        help="path to part file",
+    )
     return parser.parse_args()
 
 
-async def main(bin_path: Path, mode: StateCheckingMode, no_empty: bool, filepath: Path, partpath: Path):
+async def main(
+    bin_path: Path,
+    mode: StateCheckingMode,
+    no_empty: bool,
+    filepath: Path,
+    partpath: Path,
+):
     processes = []
     for i, strategy in enumerate(list(BranchingStrategy)):
-        args = [str(bin_path), "--mode", mode.value, "-s", str(strategy.value), "--file", str(filepath), "--part", str(partpath), "--name", f"run-{i}"]
+        args = [
+            str(bin_path),
+            "--mode",
+            mode.value,
+            "-s",
+            str(strategy.value),
+            "--file",
+            str(filepath),
+            "--part",
+            str(partpath),
+            "--name",
+            f"run-{i}",
+        ]
         if no_empty:
             args += ["--no-empty"]
         process = await asyncio.create_subprocess_exec(*args)
         processes.append(process)
 
     tasks_to_process = {asyncio.create_task(p.wait()): p for p in processes}
-    done, pending = await asyncio.wait(tasks_to_process.keys(), return_when=asyncio.FIRST_COMPLETED)
+    done, pending = await asyncio.wait(
+        tasks_to_process.keys(), return_when=asyncio.FIRST_COMPLETED
+    )
     assert len(done) > 0
     task = next(iter(done))
     done_process = tasks_to_process[task]
@@ -83,6 +125,14 @@ async def main(bin_path: Path, mode: StateCheckingMode, no_empty: bool, filepath
         await pending_process.wait()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     arguments = parse_args()
-    asyncio.run(main(arguments.bin_path, StateCheckingMode(arguments.mode), arguments.no_empty, arguments.file, arguments.part))
+    asyncio.run(
+        main(
+            arguments.bin_path,
+            StateCheckingMode(arguments.mode),
+            arguments.no_empty,
+            arguments.file,
+            arguments.part,
+        )
+    )
