@@ -84,6 +84,10 @@ int main(int argc, char **argv) {
   CLI::Option *part_opt = app.add_option("--part", part_file, "Partition file.")
                               ->check(CLI::ExistingFile);
 
+  std::string run_name = "nike";
+  CLI::Option *run_name_opt = app.add_option(
+      "--name", run_name, "Name to give to the run (useful for logging).");
+
   CLI11_PARSE(app, argc, argv)
 
   if (version) {
@@ -135,7 +139,7 @@ int main(int argc, char **argv) {
                 branching_strategy_to_string(branching_strategy_id));
 
     result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
-        parsed_formula, partition, branching_strategy_id, mode);
+        parsed_formula, partition, branching_strategy_id, mode, run_name);
   }
 
   if (result)
