@@ -111,28 +111,39 @@ async def main(
         processes.append(process)
 
     tasks_to_process = {asyncio.create_task(p.wait()): p for p in processes}
-    done, pending = await asyncio.wait(
-        tasks_to_process.keys(), return_when=asyncio.FIRST_COMPLETED
-    )
-    assert len(done) > 0
-    task = next(iter(done))
-    done_process = tasks_to_process[task]
-    for pending_task in pending:
-        pending_process: Process = tasks_to_process[pending_task]
-        pending_process.terminate()
-    for pending_task in pending:
-        pending_process: Process = tasks_to_process[pending_task]
-        await pending_process.wait()
+    done_process = None
+    try:
+        done, pending = await asyncio.wait(
+            tasks_to_process.keys(), return_when=asyncio.FIRST_COMPLETED
+        )
+        assert len(done) > 0
+        task = next(iter(done))
+        done_process = tasks_to_process[task]
+    except asyncio.CancelledError:
+        print("Cancelled execution...")
+    finally:
+        for pending_process in tasks_to_process.values():
+            if done_process == pending_process:
+                continue
+            pending_process.terminate()
+        await asyncio.wait(
+            [asyncio.create_task(p.wait()) for p in tasks_to_process.values()],
+            return_when=asyncio.ALL_COMPLETED,
+        )
+        print("all processes terminated")
 
 
 if __name__ == "__main__":
     arguments = parse_args()
-    asyncio.run(
-        main(
-            arguments.bin_path,
-            StateCheckingMode(arguments.mode),
-            arguments.no_empty,
-            arguments.file,
-            arguments.part,
+    try:
+        asyncio.run(
+            main(
+                arguments.bin_path,
+                StateCheckingMode(arguments.mode),
+                arguments.no_empty,
+                arguments.file,
+                arguments.part,
+            )
         )
-    )
+    except KeyboardInterrupt:
+        print("Received keyboard interrupt...")
