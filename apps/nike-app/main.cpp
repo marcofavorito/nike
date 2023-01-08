@@ -25,9 +25,6 @@
 #include <string>
 
 int main(int argc, char **argv) {
-  nike::utils::Logger logger("main");
-  nike::utils::Logger::level(nike::utils::LogLevel::info);
-
   CLI::App app{"A tool for DPLL-based forward LTLf synthesis."};
 
   bool no_empty = false;
@@ -94,6 +91,9 @@ int main(int argc, char **argv) {
     std::cout << NIKE_VERSION << std::endl;
     return 0;
   }
+
+  nike::utils::Logger logger(run_name);
+  nike::utils::Logger::level(nike::utils::LogLevel::info);
 
   if (verbose) {
     nike::utils::Logger::level(nike::utils::LogLevel::debug);
