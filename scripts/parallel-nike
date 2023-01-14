@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import functools
 import inspect
+import sys
 from asyncio.subprocess import Process
 from enum import Enum
 from operator import attrgetter
@@ -125,7 +126,10 @@ async def main(
         for pending_process in tasks_to_process.values():
             if done_process == pending_process:
                 continue
-            pending_process.terminate()
+            try:
+                pending_process.terminate()
+            except ProcessLookupError:
+                pass
         await asyncio.wait(
             [asyncio.create_task(p.wait()) for p in tasks_to_process.values()],
             return_when=asyncio.ALL_COMPLETED,
@@ -145,5 +149,7 @@ if __name__ == "__main__":
                 arguments.part,
             )
         )
+        sys.exit(0)
     except KeyboardInterrupt:
         print("Received keyboard interrupt...")
+        sys.exit(1)
