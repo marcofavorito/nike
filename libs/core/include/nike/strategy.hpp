@@ -34,11 +34,9 @@ typedef std::vector<std::pair<std::string, VarValues>> move_t;
 
 class Strategy {
 
-private:
+public:
   std::vector<std::string> variables_by_id;
   std::map<size_t, move_t> state_to_move;
-
-public:
   CUDD::Cudd manager_;
 
   explicit Strategy(std::vector<std::string> variables_by_id);
@@ -52,6 +50,8 @@ public:
 
 std::string
 move_stack_to_string(std::stack<std::pair<std::string, VarValues>> values);
+
+std::string strategy_to_string(const Strategy &s);
 
 } // namespace core
 } // namespace nike

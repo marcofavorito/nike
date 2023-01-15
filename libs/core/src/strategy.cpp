@@ -109,5 +109,21 @@ move_stack_to_string(std::stack<std::pair<std::string, VarValues>> values) {
   return result;
 }
 
+std::string strategy_to_string(const Strategy &s) {
+  std::string result;
+
+  for (const auto &pair : s.state_to_move) {
+    const auto &state_id = pair.first;
+    const auto &move = pair.second;
+    result += "State " + std::to_string(state_id) + ":\n";
+    for (const auto &var_value_pair : move) {
+      const auto &varname = var_value_pair.first;
+      const auto &value = var_value_pair.second;
+      result += "\t" + varname + ": " + varvalues_to_string(value) + "\n";
+    }
+  }
+  return result;
+}
+
 } // namespace core
 } // namespace nike

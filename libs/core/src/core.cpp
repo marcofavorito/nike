@@ -93,6 +93,9 @@ bool ForwardSynthesis::forward_synthesis_() {
   auto is_realizable = system_move_(context_.xnf_formula);
   context_.logger.info("Explored states: {}",
                        context_.statistics_.nb_visited_nodes());
+
+  context_.logger.debug("Strategy: {}", strategy_to_string(context_.strategy));
+
   return is_realizable;
 }
 
