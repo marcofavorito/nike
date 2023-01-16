@@ -87,6 +87,7 @@ public:
     };
 
     void initialie_maps_();
+    void reset();
   };
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,

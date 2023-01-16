@@ -56,6 +56,7 @@ bool ForwardSynthesis::ids_forward_synthesis_() {
     context_.logger.info(e.what());
   }
   context_.mode = StateEquivalenceMode::BDD;
+  context_.reset();
   context_.logger.info(
       "Start search with full state propositional equivalence");
   bool result = forward_synthesis_();
@@ -472,6 +473,19 @@ void ForwardSynthesis::Context::initialie_maps_() {
       uncontrollable_map[i] = 1;
     }
   }
+}
+
+void ForwardSynthesis::Context::reset() {
+  statistics_ = Statistics();
+  graph = Graph();
+  strategy = Strategy(partition.output_variables);
+  path = Path();
+  prop_to_id = std::map<std::string, size_t>();
+  discovered = std::map<size_t, bool>();
+  loop_tags = std::set<long>();
+  sdd_node_id_to_formula = std::map<long, logic::ltlf_ptr>();
+  formula_to_bdd_node = std::map<logic::ltlf_ptr, CUDD::BDD>();
+  indentation = 0;
 }
 
 void ForwardSynthesis::register_termination_callback(DD_THFP callback,
