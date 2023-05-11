@@ -26,6 +26,8 @@ set(${PROJECT_NAME}_VERSION ${PROJECT_VERSION})
 add_definitions( -DNIKE_VERSION="${PROJECT_VERSION}" )
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
+include(ExternalProject)
+
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # require at least gcc 8
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
@@ -59,6 +61,20 @@ endif()
 if (PROFILE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
 endif()
+
+
+# set up usrlocal directory
+set(USR_DIR ${CMAKE_CURRENT_BINARY_DIR}/usrlocal)
+set(USR_LIB_DIR ${USR_DIR}/lib)
+file(MAKE_DIRECTORY ${USR_DIR})
+
+list(APPEND CMAKE_LIBRARY_PATH ${USR_DIR}/lib)
+list(APPEND CMAKE_PROGRAM_PATH ${USR_DIR}/bin)
+list(APPEND CMAKE_INCLUDE_PATH ${USR_DIR}/include)
+# directory where all external project libraries reside
+link_directories(${USR_DIR}/lib)
+include_directories(SYSTEM ${USR_DIR}/include)
+
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 

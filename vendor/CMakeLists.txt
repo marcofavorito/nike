@@ -40,6 +40,25 @@ set (CLI11_MODULE_PATH "${VENDOR_MODULE_PATH}/cli11")
 set (CLI11_INCLUDE_PATH "${CLI11_MODULE_PATH}/include")
 # -------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# Glucose
+ExternalProject_Add(glucose
+    GIT_REPOSITORY https://github.com/whitemech/glucose.git
+    GIT_TAG v4.2.1
+    GIT_PROGRESS true
+    CMAKE_ARGS
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DCMAKE_INSTALL_PREFIX=${USR_DIR}
+    -DCMAKE_BUILD_TYPE=Release
+)
+set(GLUCOSE_LIBRARIES ${USR_LIB_DIR}/libglucose.a ${USR_LIB_DIR}/libglucosep.a)
+
+add_custom_target(glucose-libraries DEPENDS glucose ${GLUCOSE_LIBRARIES})
+# -------------------------------------------------------------------------
+
+
 #set variables
 set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH})
 
