@@ -53,7 +53,7 @@ bool PLBinaryOp::is_equal(const Comparable &o) const {
   return get_type_code() == o.get_type_code() and
          std::equal(args.begin(), args.end(),
                     dynamic_cast<const PLBinaryOp &>(o).args.begin(),
-                    utils::Deref::Equal());
+                    utils::EqualOrDeref());
 }
 int PLBinaryOp::compare_(const Comparable &o) const {
   assert(this->get_type_code() == o.get_type_code());

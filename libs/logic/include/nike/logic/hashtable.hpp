@@ -29,12 +29,12 @@ namespace logic {
  */
 class HashTable {
 private:
-  std::unordered_set<ast_ptr, utils::Deref::Hash, utils::Deref::Equal> m_table_;
+  std::unordered_set<ast_ptr, utils::Deref::Hash, utils::EqualOrDeref> m_table_;
 
 public:
   explicit HashTable() {
     m_table_ =
-        std::unordered_set<ast_ptr, utils::Deref::Hash, utils::Deref::Equal>{};
+        std::unordered_set<ast_ptr, utils::Deref::Hash, utils::EqualOrDeref>{};
   }
 
   template <typename T>

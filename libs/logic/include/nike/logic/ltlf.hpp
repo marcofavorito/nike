@@ -170,7 +170,7 @@ public:
   LTLfCommutativeIdempotentBinaryOp(Context &ctx, vec_ptr args)
       : LTLfBinaryOp(
             ctx,
-            utils::setify<ltlf_ptr, utils::Deref::Equal, utils::Deref::Less>(
+            utils::setify<ltlf_ptr, utils::EqualOrDeref, utils::Deref::Less>(
                 args)) {}
   LTLfCommutativeIdempotentBinaryOp(Context &ctx, const set_ptr &args)
       : LTLfBinaryOp(ctx, args) {}

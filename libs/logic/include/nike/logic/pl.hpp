@@ -107,7 +107,7 @@ class PLCommutativeIdempotentBinaryOp : public PLBinaryOp {
 public:
   PLCommutativeIdempotentBinaryOp(Context &ctx, vec_pl_ptr args)
       : PLBinaryOp(
-            ctx, utils::setify<pl_ptr, utils::Deref::Equal, utils::Deref::Less>(
+            ctx, utils::setify<pl_ptr, utils::EqualOrDeref, utils::Deref::Less>(
                      args)) {}
   PLCommutativeIdempotentBinaryOp(Context &ctx, const set_pl_ptr &args)
       : PLBinaryOp(ctx, args) {}

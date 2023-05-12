@@ -61,6 +61,14 @@ struct Deref {
   };
 };
 
+struct EqualOrDeref {
+  template <typename T>
+  size_t operator()(std::shared_ptr<const T> const &a,
+                    std::shared_ptr<const T> const &b) const {
+    return a == b or *a == *b;
+  }
+};
+
 /*
  * make_unique function, like the one in the standards >C++14.
  * In C++11, that is not included.

@@ -106,6 +106,11 @@ ltlf_ptr copy_ltlf_formula(Context &context, const LTLfFormula &f) {
   auto result = copy_visitor.apply(f);
   return result;
 }
+ltlf_ptr copy_ltlf_formula(const LTLfFormula &f) {
+  CopyVisitor copy_visitor{f.ctx()};
+  auto result = copy_visitor.apply(f);
+  return result;
+}
 
 } // namespace logic
 } // namespace nike

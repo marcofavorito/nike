@@ -64,9 +64,15 @@ int LTLfAtom::compare_(const Comparable &o) const {
 }
 
 bool LTLfUnaryOp::is_equal(const Comparable &o) const {
-  return get_type_code() == o.get_type_code() and
-         arg->is_equal(*dynamic_cast<const LTLfUnaryOp &>(o).arg);
+  auto a = get_type_code();
+  auto b = o.get_type_code();
+  if (a != b) {
+    return false;
+  }
+  auto result = arg->is_equal(*dynamic_cast<const LTLfUnaryOp &>(o).arg);
+  return result;
 }
+
 int LTLfUnaryOp::compare_(const Comparable &o) const {
   assert(get_type_code() == o.get_type_code());
   return this->arg->compare(*dynamic_cast<const LTLfUnaryOp &>(o).arg);
@@ -76,7 +82,7 @@ bool LTLfBinaryOp::is_equal(const Comparable &o) const {
   return get_type_code() == o.get_type_code() and
          std::equal(args.begin(), args.end(),
                     dynamic_cast<const LTLfBinaryOp &>(o).args.begin(),
-                    utils::Deref::Equal());
+                    utils::EqualOrDeref());
 }
 int LTLfBinaryOp::compare_(const Comparable &o) const {
   assert(this->get_type_code() == o.get_type_code());

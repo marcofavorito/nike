@@ -57,5 +57,6 @@ public:
                       const LTLfUnaryOp &f);
 };
 ltlf_ptr copy_ltlf_formula(Context &context, const LTLfFormula &f);
+ltlf_ptr copy_ltlf_formula(const LTLfFormula &f);
 } // namespace logic
 } // namespace nike
