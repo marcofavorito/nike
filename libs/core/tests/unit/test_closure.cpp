@@ -194,9 +194,8 @@ TEST_CASE("Test closure of a & b", "[core][SDD]") {
   auto expected = logic::vec_ptr({
       tt,
       ff,
-      a,
       b,
-      a_and_b,
+      a,
       next_not_end,
       wnext_end,
       not_end,
@@ -227,7 +226,6 @@ TEST_CASE("Test closure of a | b", "[core][SDD]") {
       ff,
       a,
       b,
-      a_or_b,
       next_not_end,
       wnext_end,
       not_end,
