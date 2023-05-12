@@ -28,7 +28,7 @@ TEST_CASE("copy of tt", "[logic][ltlf]") {
   auto f1 = context.make_tt();
 
   auto f2 = copy_ltlf_formula(*f1);
-  REQUIRE(f1 != f2);
+  REQUIRE(f1 == f2);
   REQUIRE(*f1 == *f2);
 }
 
@@ -37,7 +37,7 @@ TEST_CASE("copy of ff", "[logic][ltlf]") {
   auto f1 = context.make_ff();
 
   auto f2 = copy_ltlf_formula(*f1);
-  REQUIRE(f1 != f2);
+  REQUIRE(f1 == f2);
   REQUIRE(*f1 == *f2);
 }
 
@@ -46,7 +46,7 @@ TEST_CASE("copy of true", "[logic][ltlf]") {
   auto f1 = context.make_prop_true();
 
   auto f2 = copy_ltlf_formula(*f1);
-  REQUIRE(f1 != f2);
+  REQUIRE(f1 == f2);
   REQUIRE(*f1 == *f2);
 }
 
@@ -55,7 +55,7 @@ TEST_CASE("copy of false", "[logic][ltlf]") {
   auto f1 = context.make_prop_false();
 
   auto f2 = copy_ltlf_formula(*f1);
-  REQUIRE(f1 != f2);
+  REQUIRE(f1 == f2);
   REQUIRE(*f1 == *f2);
 }
 
@@ -64,7 +64,7 @@ TEST_CASE("copy of atom", "[logic][ltlf]") {
   auto f1 = context.make_atom("a");
 
   auto f2 = copy_ltlf_formula(*f1);
-  REQUIRE(f1 != f2);
+  REQUIRE(f1 == f2);
   REQUIRE(*f1 == *f2);
 }
 
