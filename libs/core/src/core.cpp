@@ -74,18 +74,29 @@ bool ForwardSynthesis::forward_synthesis_() {
     return true;
   }
 
-  context_.logger.info("Check one-step realizability");
-  auto rel_result = one_step_realizability(*context_.nnf_formula, context_);
-  if (rel_result) {
-    context_.logger.info("One-step realizability check successful");
-    return true;
+  if (!context_.disable_one_step_realizability) {
+    context_.logger.info("Check one-step realizability");
+    auto rel_result = one_step_realizability(*context_.nnf_formula, context_);
+    if (rel_result) {
+      context_.logger.info("One-step realizability check successful");
+      return true;
+    }
   }
-  context_.logger.info("Check one-step unrealizability");
-  auto is_unrealizable =
-      one_step_unrealizability(*context_.nnf_formula, context_);
-  if (is_unrealizable) {
-    context_.logger.info("One-step unrealizability check successful");
-    return false;
+  else {
+    context_.logger.info("One-step realizability check disabled");
+  }
+
+  if (!context_.disable_one_step_unrealizability) {
+    context_.logger.info("Check one-step unrealizability");
+    auto is_unrealizable =
+        one_step_unrealizability(*context_.nnf_formula, context_);
+    if (is_unrealizable) {
+      context_.logger.info("One-step unrealizability check successful");
+      return false;
+    }
+  }
+  else{
+    context_.logger.info("One-step unrealizability check disabled");
   }
 
   context_.logger.info("Starting the search...");
@@ -173,23 +184,28 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
     return true;
   }
 
-  auto one_step_realizability_result =
-      one_step_realizability(*formula, context_);
-  if (one_step_realizability_result) {
-    context_.print_search_debug(
-        "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
-    context_.discovered[bdd_formula_id] = true;
-    context_.indentation -= 1;
-    return true;
+  if (!context_.disable_one_step_realizability) {
+    auto one_step_realizability_result =
+        one_step_realizability(*formula, context_);
+    if (one_step_realizability_result) {
+      context_.print_search_debug(
+          "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
+      context_.discovered[bdd_formula_id] = true;
+      context_.indentation -= 1;
+      return true;
+    }
   }
-  auto is_unrealizable = one_step_unrealizability(*formula, context_);
-  if (is_unrealizable) {
-    context_.print_search_debug(
-        "One-step unrealizability success for node {}: FAILURE",
-        bdd_formula_id);
-    context_.discovered[bdd_formula_id] = false;
-    context_.indentation -= 1;
-    return false;
+
+  if (!context_.disable_one_step_unrealizability) {
+    auto is_unrealizable = one_step_unrealizability(*formula, context_);
+    if (is_unrealizable) {
+      context_.print_search_debug(
+          "One-step unrealizability success for node {}: FAILURE",
+          bdd_formula_id);
+      context_.discovered[bdd_formula_id] = false;
+      context_.indentation -= 1;
+      return false;
+    }
   }
 
   context_.path.push(bdd_formula_id);
@@ -432,18 +448,24 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    BranchingStrategy bs,
                                    StateEquivalenceMode mode,
                                    double max_size_factor,
-                                   std::string logger_section_name)
+                                   std::string logger_section_name,
+                                   bool disable_one_step_realizability,
+                                   bool disable_one_step_unrealizability)
     : logger{std::move(logger_section_name)}, formula{formula},
       partition{partition}, ast_manager{&formula->ctx()},
-      strategy{partition.output_variables}, bs{bs}, mode{mode} {
+      strategy{partition.output_variables}, bs{bs}, mode{mode},
+      disable_one_step_realizability{disable_one_step_realizability},
+      disable_one_step_unrealizability{disable_one_step_unrealizability} {
 
   nnf_formula = logic::to_nnf(*formula);
   xnf_formula = xnf(*nnf_formula);
   current_max_size_ = logic::size(*xnf_formula) * max_size_factor;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
-  manager_ = CUDD::Cudd(closure_.nb_formulas(), 0, 4096);
-  manager_.AutodynEnable();
+  if (disable_one_step_realizability and disable_one_step_unrealizability and mode != StateEquivalenceMode::BDD) {
+    manager_ = CUDD::Cudd(closure_.nb_formulas(), 0, 4096);
+    manager_.AutodynEnable();
+  }
   prop_to_id = compute_prop_to_id_map(closure_, partition);
   statistics_ = Statistics();
   branch_variable = get_branching_strategy(bs);

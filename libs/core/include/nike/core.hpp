@@ -70,10 +70,14 @@ public:
     StateEquivalenceMode mode;
     BranchingStrategy bs;
     bool stopped = false;
+    bool disable_one_step_realizability = false;
+    bool disable_one_step_unrealizability = false;
     Context(const logic::ltlf_ptr &formula,
             const InputOutputPartition &partition, BranchingStrategy bs,
             StateEquivalenceMode mode, double max_size_factor = 3.0,
-            std::string logger_section_name = "nike");
+            std::string logger_section_name = "nike",
+            bool disable_one_step_realizability = false,
+            bool disable_one_step_unrealizability = false);
     ~Context() = default;
 
     template <typename Arg1, typename... Args>
@@ -94,10 +98,12 @@ public:
                    BranchingStrategy bs = BranchingStrategy::RANDOM,
                    StateEquivalenceMode mode = StateEquivalenceMode::HASH,
                    std::string logger_section_name = "nike",
+                   bool disable_one_step_realizability = false,
+                   bool disable_one_step_unrealizability = false,
                    double max_size_factor = 3.0)
       : ISynthesis(formula, partition),
         context_{formula, partition,       bs,
-                 mode,    max_size_factor, std::move(logger_section_name)} {};
+                 mode,    max_size_factor, std::move(logger_section_name), disable_one_step_realizability, disable_one_step_unrealizability} {};
   bool is_realizable() override;
   void register_termination_callback(DD_THFP callback,
                                      void *callback_arg) const;
