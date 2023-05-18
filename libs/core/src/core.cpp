@@ -22,7 +22,6 @@
 #include <nike/logic/nnf.hpp>
 #include <nike/logic/replace.hpp>
 #include <nike/logic/size.hpp>
-#include <nike/one_step_realizability.hpp>
 #include <nike/one_step_unrealizability.hpp>
 #include <nike/strip_next.hpp>
 #include <nike/to_bdd.hpp>
@@ -76,8 +75,9 @@ bool ForwardSynthesis::forward_synthesis_() {
 
   if (!context_.disable_one_step_realizability) {
     context_.logger.info("Check one-step realizability");
-    auto rel_result = one_step_realizability(*context_.nnf_formula, context_);
-    if (rel_result) {
+    auto rel_result =
+        this->context_.realizability_checker->one_step_realizable(*context_.nnf_formula, context_);
+    if (rel_result != std::nullopt) {
       context_.logger.info("One-step realizability check successful");
       return true;
     }
@@ -111,7 +111,7 @@ bool ForwardSynthesis::forward_synthesis_() {
   return is_realizable;
 }
 
-std::map<std::string, size_t> ForwardSynthesis::compute_prop_to_id_map(
+std::map<std::string, size_t> Context::compute_prop_to_id_map(
     const Closure &closure, const InputOutputPartition &partition) {
   std::map<std::string, size_t> result;
   size_t offset = closure.nb_formulas();
@@ -186,8 +186,8 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
 
   if (!context_.disable_one_step_realizability) {
     auto one_step_realizability_result =
-        one_step_realizability(*formula, context_);
-    if (one_step_realizability_result) {
+        this->context_.realizability_checker->one_step_realizable(*formula, context_);
+    if (one_step_realizability_result != std::nullopt) {
       context_.print_search_debug(
           "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
       context_.discovered[bdd_formula_id] = true;
@@ -443,7 +443,7 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
   }
 }
 
-ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
+Context::Context(const logic::ltlf_ptr &formula,
                                    const InputOutputPartition &partition,
                                    BranchingStrategy bs,
                                    StateEquivalenceMode mode,
@@ -451,7 +451,9 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
                                    std::string logger_section_name,
                                    bool disable_one_step_realizability,
                                    bool disable_one_step_unrealizability)
-    : logger{std::move(logger_section_name)}, formula{formula},
+    : logger{std::move(logger_section_name)},
+    realizability_checker{get_default_realizability_checker()},
+    formula{formula},
       partition{partition}, ast_manager{&formula->ctx()},
       strategy{partition.output_variables}, bs{bs}, mode{mode},
       disable_one_step_realizability{disable_one_step_realizability},
@@ -472,7 +474,7 @@ ForwardSynthesis::Context::Context(const logic::ltlf_ptr &formula,
   initialie_maps_();
 }
 
-void ForwardSynthesis::Context::initialie_maps_() {
+void Context::initialie_maps_() {
   const auto nb_variables = closure_.nb_formulas() + closure_.nb_atoms();
   controllable_map =
       std::vector<int>(closure_.nb_formulas() + closure_.nb_atoms());
@@ -497,7 +499,7 @@ void ForwardSynthesis::Context::initialie_maps_() {
   }
 }
 
-void ForwardSynthesis::Context::reset() {
+void Context::reset() {
   statistics_ = Statistics();
   graph = Graph();
   strategy = Strategy(partition.output_variables);

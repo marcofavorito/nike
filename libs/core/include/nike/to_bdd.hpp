@@ -26,10 +26,10 @@ namespace core {
 class ToBddVisitor : public logic::Visitor {
 private:
   CUDD::BDD result;
-  ForwardSynthesis::Context &context_;
+  Context &context_;
 
 public:
-  explicit ToBddVisitor(ForwardSynthesis::Context &context)
+  explicit ToBddVisitor(Context &context)
       : context_{context} {}
   void visit(const logic::LTLfTrue &) override;
   void visit(const logic::LTLfFalse &) override;
@@ -55,7 +55,7 @@ public:
 };
 
 CUDD::BDD to_bdd(const logic::LTLfFormula &formula,
-                 ForwardSynthesis::Context &context);
+                 Context &context);
 
 } // namespace core
 } // namespace nike

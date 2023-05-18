@@ -116,7 +116,7 @@ CUDD::BDD ToBddVisitor::get_bdd_var(const logic::LTLfFormula &formula) {
 }
 
 CUDD::BDD to_bdd(const logic::LTLfFormula &formula,
-                 ForwardSynthesis::Context &context) {
+                 Context &context) {
   ToBddVisitor visitor{context};
   auto result = visitor.apply(formula);
   return result;

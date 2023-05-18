@@ -27,12 +27,12 @@ namespace core {
 
 class OneStepUnrealizabilityVisitor : public logic::Visitor {
 public:
-  ForwardSynthesis::Context &context_;
+  Context &context_;
   CUDD::Cudd manager;
   CUDD::BDD result;
   std::map<logic::ast_ptr, int> propToId;
   CUDD::BDD controllablesConj;
-  explicit OneStepUnrealizabilityVisitor(ForwardSynthesis::Context &context)
+  explicit OneStepUnrealizabilityVisitor(Context &context)
       : context_{context}, manager{CUDD::Cudd(0, 0, 2048, 0)},
         controllablesConj{manager.bddOne()} {}
   void visit(const logic::LTLfTrue &) override;
@@ -58,7 +58,7 @@ public:
 };
 
 bool one_step_unrealizability(const logic::LTLfFormula &f,
-                              ForwardSynthesis::Context &context);
+                              Context &context);
 
 } // namespace core
 } // namespace nike

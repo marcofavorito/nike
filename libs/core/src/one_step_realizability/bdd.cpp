@@ -16,24 +16,25 @@
  */
 
 #include <cassert>
-#include <nike/one_step_realizability.hpp>
+#include "nike/one_step_realizability/bdd.hpp"
+
 
 namespace nike {
 namespace core {
 
-void OneStepRealizabilityVisitor::visit(const logic::LTLfTrue &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfTrue &formula) {
   result = manager.bddOne();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfFalse &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfFalse &formula) {
   result = manager.bddZero();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfPropTrue &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfPropTrue &formula) {
   result = manager.bddOne();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfPropFalse &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfPropFalse &formula) {
   result = manager.bddZero();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfAtom &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfAtom &formula) {
   bool controllable = false;
   if (logic::is_a<const logic::StringSymbol>(*formula.symbol)) {
     auto prop =
@@ -58,14 +59,14 @@ void OneStepRealizabilityVisitor::visit(const logic::LTLfAtom &formula) {
     controllablesConj = controllablesConj & result;
   }
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfNot &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfNot &formula) {
   logic::throw_expected_nnf();
 }
-void OneStepRealizabilityVisitor::visit(
+void BddOneStepRealizabilityVisitor::visit(
     const logic::LTLfPropositionalNot &formula) {
   result = !apply(*formula.get_atom());
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfAnd &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfAnd &formula) {
   CUDD::BDD finalResult = manager.bddOne();
   for (const auto &subf : formula.args) {
     finalResult = finalResult & apply(*subf);
@@ -75,7 +76,7 @@ void OneStepRealizabilityVisitor::visit(const logic::LTLfAnd &formula) {
   }
   result = finalResult;
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfOr &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfOr &formula) {
   CUDD::BDD finalResult = manager.bddZero();
   for (const auto &subf : formula.args) {
     finalResult = finalResult | apply(*subf);
@@ -85,60 +86,60 @@ void OneStepRealizabilityVisitor::visit(const logic::LTLfOr &formula) {
   }
   result = finalResult;
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfImplies &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfImplies &formula) {
   logic::throw_expected_nnf();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfEquivalent &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfEquivalent &formula) {
   logic::throw_expected_nnf();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfXor &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfXor &formula) {
   logic::throw_expected_nnf();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfNext &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfNext &formula) {
   result = manager.bddZero();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfWeakNext &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfWeakNext &formula) {
   result = manager.bddOne();
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfUntil &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfUntil &formula) {
   result = apply(**formula.args.rbegin());
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfRelease &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfRelease &formula) {
   result = apply(**formula.args.rbegin());
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfEventually &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfEventually &formula) {
   result = apply(*formula.arg);
 }
-void OneStepRealizabilityVisitor::visit(const logic::LTLfAlways &formula) {
+void BddOneStepRealizabilityVisitor::visit(const logic::LTLfAlways &formula) {
   result = apply(*formula.arg);
 }
 
-CUDD::BDD OneStepRealizabilityVisitor::apply(const logic::LTLfFormula &f) {
+CUDD::BDD BddOneStepRealizabilityVisitor::apply(const logic::LTLfFormula &f) {
   f.accept(*this);
   return result;
 }
 
-bool one_step_realizability(const logic::LTLfFormula &f,
-                            ForwardSynthesis::Context &context) {
-  auto visitor = OneStepRealizabilityVisitor{context};
+std::optional<move_t> BddOneStepRealizabilityChecker::one_step_realizable(const logic::LTLfFormula &f, Context &context) {
+  auto visitor = BddOneStepRealizabilityVisitor{context};
   auto result = visitor.apply(f);
 
   if (result.IsZero()) {
-    return false;
+    return std::nullopt;
   }
   if (result.IsOne()) {
-    return true;
+    return move_t{};
   }
 
   auto varToQuantify = visitor.controllablesConj;
   auto quantified = result.ExistAbstract(visitor.controllablesConj);
 
   if (quantified.IsOne()) {
-    return true;
+    return move_t{};
   }
 
-  return false;
+  return std::nullopt;
 }
+
 
 } // namespace core
 } // namespace nike

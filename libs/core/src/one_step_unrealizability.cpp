@@ -125,7 +125,7 @@ CUDD::BDD OneStepUnrealizabilityVisitor::apply(const logic::LTLfFormula &f) {
 }
 
 bool one_step_unrealizability(const logic::LTLfFormula &f,
-                              ForwardSynthesis::Context &context) {
+                              Context &context) {
   auto visitor = OneStepUnrealizabilityVisitor{context};
   auto result = visitor.apply(f);
 

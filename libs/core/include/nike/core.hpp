@@ -27,6 +27,8 @@
 #include <nike/statistics.hpp>
 #include <nike/strategy.hpp>
 #include <utility>
+#include "nike/one_step_realizability/base.hpp"
+
 
 namespace nike {
 namespace core {
@@ -41,13 +43,12 @@ public:
   explicit interrupted_exception() : std::exception() {}
 };
 
-class ForwardSynthesis : public ISynthesis {
-public:
   class Context {
   public:
     logic::ltlf_ptr formula;
     InputOutputPartition partition;
     logic::Context *ast_manager;
+    std::unique_ptr<OneStepRealizabilityChecker> realizability_checker;
     logic::ltlf_ptr nnf_formula;
     logic::ltlf_ptr xnf_formula;
     Closure closure_;
@@ -92,7 +93,15 @@ public:
 
     void initialie_maps_();
     void reset();
+
+  private:
+    static std::map<std::string, size_t>
+    compute_prop_to_id_map(const Closure &closure,
+                           const InputOutputPartition &partition);
   };
+
+class ForwardSynthesis : public ISynthesis {
+public:
   ForwardSynthesis(const logic::ltlf_ptr &formula,
                    const InputOutputPartition &partition,
                    BranchingStrategy bs = BranchingStrategy::RANDOM,
@@ -114,9 +123,6 @@ private:
   Context context_;
   size_t get_state_id(const logic::ltlf_ptr &formula);
 
-  static std::map<std::string, size_t>
-  compute_prop_to_id_map(const Closure &closure,
-                         const InputOutputPartition &partition);
   long get_bdd_id(CUDD::BDD node) {
     return reinterpret_cast<std::intptr_t>(node.getNode());
   }
