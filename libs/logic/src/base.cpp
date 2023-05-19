@@ -117,7 +117,9 @@ ltlf_ptr Context::make_prop_not(const ltlf_ptr &arg) {
         std::static_pointer_cast<const LTLfPropositionalNot>(arg)->arg);
   }
   // argument must be an atom
-  assert(is_a<LTLfAtom>(*arg));
+  if(!is_a<LTLfAtom>(*arg)){
+    throw std::invalid_argument("argument must be an atom");
+  }
   auto negation = std::make_shared<const LTLfPropositionalNot>(*this, arg);
   auto actual = table_->insert_if_not_available(negation);
   return actual;
@@ -126,7 +128,7 @@ ltlf_ptr Context::make_prop_not(const ltlf_ptr &arg) {
 ltlf_ptr Context::make_and(const vec_ptr &args) {
   ltlf_ptr (Context::*fun)(bool) = &Context::make_bool;
   auto tmp =
-      and_or<const LTLfFormula, LTLfAnd, LTLfTrue, LTLfFalse, LTLfAnd, LTLfOr>(
+      ltlf_and_or<const LTLfFormula, LTLfAnd, LTLfTrue, LTLfFalse>(
           *this, args, false, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
@@ -135,7 +137,7 @@ ltlf_ptr Context::make_and(const vec_ptr &args) {
 ltlf_ptr Context::make_or(const vec_ptr &args) {
   ltlf_ptr (Context::*fun)(bool) = &Context::make_bool;
   auto tmp =
-      and_or<const LTLfFormula, LTLfOr, LTLfTrue, LTLfFalse, LTLfAnd, LTLfOr>(
+      ltlf_and_or<const LTLfFormula, LTLfOr, LTLfTrue, LTLfFalse>(
           *this, args, true, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
@@ -210,14 +212,14 @@ pl_ptr Context::make_literal(const ast_ptr &symbol, bool negated) {
 }
 pl_ptr Context::make_prop_and(const vec_pl_ptr &args) {
   pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
-  auto tmp = and_or<const PLFormula, PLAnd, PLTrue, PLFalse, PLAnd, PLOr>(
+  auto tmp = and_or<const PLFormula, PLAnd, PLTrue, PLFalse>(
       *this, args, false, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;
 }
 pl_ptr Context::make_prop_or(const vec_pl_ptr &args) {
   pl_ptr (Context::*fun)(bool) = &Context::make_prop_bool;
-  auto tmp = and_or<const PLFormula, PLOr, PLTrue, PLFalse, PLAnd, PLOr>(
+  auto tmp = and_or<const PLFormula, PLOr, PLTrue, PLFalse>(
       *this, args, true, fun);
   auto actual = table_->insert_if_not_available(tmp);
   return actual;

@@ -90,6 +90,16 @@ int LTLfBinaryOp::compare_(const Comparable &o) const {
                                 dynamic_cast<const LTLfBinaryOp &>(o).args);
 }
 
+void LTLfCommutativeIdempotentBinaryOp::set_accepts_empty(bool op_x_not_x) {
+
+  auto f = op_x_not_x? utils::or_ : utils::and_;
+  bool global_accept_empty = (*this->args.begin())->metadata().accepts_empty;
+  for (auto it = std::next(this->args.begin()); it != this->args.end(); ++it) {
+    global_accept_empty = f(global_accept_empty, (*it)->metadata().accepts_empty);
+  }
+  metadata_.accepts_empty = global_accept_empty;
+}
+
 ltlf_ptr simplify(const LTLfNot &formula) {
   if (is_a<LTLfTrue>(*formula.arg)) {
     return formula.ctx().make_ff();

@@ -122,6 +122,75 @@ TEST_CASE("conjunction", "[logic][ltlf]") {
   REQUIRE(*expected1 == *expected2);
 }
 
+TEST_CASE("conjunction simplification with tt", "[logic][ltlf]") {
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto tt = context.make_tt();
+  auto expected = context.make_and(vec_ptr{a, tt});
+  REQUIRE(expected == a);
+  REQUIRE(*expected == *a);
+}
+
+TEST_CASE("conjunction simplification with ff", "[logic][ltlf]") {
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto ff = context.make_ff();
+  auto expected = context.make_and(vec_ptr{a, ff});
+  REQUIRE(expected == ff);
+  REQUIRE(*expected == *ff);
+}
+
+TEST_CASE("conjunction simplification with end, not-end", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto not_end = context.make_not_end();
+  auto ff = context.make_ff();
+  auto expected = context.make_and(vec_ptr{end, not_end});
+  REQUIRE(expected == ff);
+  REQUIRE(*expected == *ff);
+}
+
+TEST_CASE("conjunction simplification with not-end, not accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto not_end = context.make_not_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_until(vec_ptr{a, b});
+  auto expected = context.make_and(vec_ptr{f, not_end});
+  REQUIRE(expected == f);
+}
+
+TEST_CASE("conjunction simplification with not-end, accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto not_end = context.make_not_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_release(vec_ptr{a, b});
+  auto expected = context.make_and(vec_ptr{f, not_end});
+  REQUIRE(is_a<LTLfAnd>(*expected));
+  REQUIRE(std::static_pointer_cast<const LTLfAnd>(expected)->args.size() == 2);
+}
+
+TEST_CASE("conjunction simplification with end, accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_release(vec_ptr{a, b});
+  auto expected = context.make_and(vec_ptr{f, end});
+  REQUIRE(expected == end);
+}
+
+TEST_CASE("conjunction simplification with end, not accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_until(vec_ptr{a, b});
+  auto expected = context.make_and(vec_ptr{f, end});
+  REQUIRE(expected == context.make_ff());
+}
+
 TEST_CASE("disjunction", "[logic][ltlf]") {
   auto context = Context();
 
@@ -133,6 +202,76 @@ TEST_CASE("disjunction", "[logic][ltlf]") {
   auto expected2 = context.make_or(vec_ptr{atom1, atom3, atom4});
   REQUIRE(expected1 == expected2);
   REQUIRE(*expected1 == *expected2);
+}
+
+TEST_CASE("disjunction simplification with tt", "[logic][ltlf]") {
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto tt = context.make_tt();
+  auto expected = context.make_or(vec_ptr{a, tt});
+  REQUIRE(expected == tt);
+  REQUIRE(*expected == *tt);
+}
+
+TEST_CASE("disjunction simplification with ff", "[logic][ltlf]") {
+  auto context = Context();
+  auto a = context.make_atom("a");
+  auto ff = context.make_ff();
+  auto expected = context.make_or(vec_ptr{a, ff});
+  REQUIRE(expected == a);
+  REQUIRE(*expected == *a);
+}
+
+TEST_CASE("disjunction simplification with end, not-end", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto not_end = context.make_not_end();
+  auto tt = context.make_tt();
+  auto expected = context.make_or(vec_ptr{end, not_end});
+  REQUIRE(expected == tt);
+  REQUIRE(*expected == *tt);
+}
+
+
+TEST_CASE("disjunction simplification with not-end, not accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto not_end = context.make_not_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_until(vec_ptr{a, b});
+  auto expected = context.make_or(vec_ptr{f, not_end});
+  REQUIRE(expected == not_end);
+}
+
+TEST_CASE("disjunction simplification with not-end, accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto not_end = context.make_not_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_release(vec_ptr{a, b});
+  auto expected = context.make_or(vec_ptr{f, not_end});
+  REQUIRE(expected == context.make_tt());
+}
+
+TEST_CASE("disjunction simplification with end, accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_release(vec_ptr{a, b});
+  auto expected = context.make_or(vec_ptr{f, end});
+  REQUIRE(expected == f);
+}
+
+TEST_CASE("disjunction simplification with end, not accepts-empty", "[logic][ltlf]") {
+  auto context = Context();
+  auto end = context.make_end();
+  auto a = context.make_atom("a");
+  auto b = context.make_atom("b");
+  auto f = context.make_until(vec_ptr{a, b});
+  auto expected = context.make_or(vec_ptr{f, end});
+  REQUIRE(is_a<LTLfOr>(*expected));
+  REQUIRE(std::static_pointer_cast<const LTLfAnd>(expected)->args.size() == 2);
 }
 
 TEST_CASE("implication", "[logic][ltlf]") {
