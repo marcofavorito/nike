@@ -105,6 +105,9 @@ void OneStepUnrealizabilityVisitor::visit(const logic::LTLfUntil &formula) {
   CUDD::BDD finalResult = manager.bddZero();
   for (const auto &subf : formula.args) {
     finalResult = finalResult | apply(*subf);
+    if (finalResult.IsOne()) {
+      break;
+    }
   }
   result = finalResult;
 }
