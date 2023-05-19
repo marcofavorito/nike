@@ -19,6 +19,7 @@
 #include <optional>
 #include <nike/logic/ltlf.hpp>
 #include <nike/strategy.hpp>
+#include <nike/input_output_partition.hpp>
 
 
 namespace nike{
@@ -28,7 +29,7 @@ namespace core {
 
   class OneStepRealizabilityChecker {
   public:
-    virtual std::optional<move_t> one_step_realizable(const logic::LTLfFormula &f, Context &context) = 0;
+    virtual std::optional<move_t> one_step_realizable(const logic::LTLfFormula &f, const InputOutputPartition& partition) = 0;
 
   };
 

@@ -42,7 +42,7 @@ add_library (${NIKE_UTILS_LIB_NAME}
         STATIC
             ${NIKE_UTILS_SOURCE_FILES}
             ${NIKE_UTILS_HEADER_FILES})
-#target_link_libraries(${NIKE_UTILS_LIB_NAME})
+target_link_libraries(${NIKE_UTILS_LIB_NAME} ${CUDD_LIBRARIES})
 set_target_properties(${NIKE_UTILS_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 add_subdirectory(tests)

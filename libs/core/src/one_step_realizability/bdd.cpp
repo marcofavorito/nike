@@ -16,7 +16,9 @@
  */
 
 #include <cassert>
+#include <vector>
 #include "nike/one_step_realizability/bdd.hpp"
+#include "nike/logic/print.hpp"
 
 
 namespace nike {
@@ -36,26 +38,30 @@ void BddOneStepRealizabilityVisitor::visit(const logic::LTLfPropFalse &formula) 
 }
 void BddOneStepRealizabilityVisitor::visit(const logic::LTLfAtom &formula) {
   bool controllable = false;
-  if (logic::is_a<const logic::StringSymbol>(*formula.symbol)) {
-    auto prop =
-        std::static_pointer_cast<const logic::StringSymbol>(formula.symbol)
-            ->name;
-    if (std::find(context_.partition.output_variables.begin(),
-                  context_.partition.output_variables.end(),
-                  prop) != context_.partition.output_variables.end()) {
-      controllable = true;
-    }
+  assert(logic::is_a<const logic::StringSymbol>(*formula.symbol));
+  auto prop =
+      std::static_pointer_cast<const logic::StringSymbol>(formula.symbol)
+          ->name;
+  if (std::find(partition.output_variables.begin(),
+                partition.output_variables.end(),
+                prop) != partition.output_variables.end()) {
+    controllable = true;
   }
 
   auto varId = propToId.find(formula.shared_from_this());
   if (varId == propToId.end()) {
     result = manager.bddVar();
     propToId[formula.shared_from_this()] = propToId.size();
+    variableNames.push_back(prop);
+    isVariableControllable.push_back(controllable);
   } else {
     result = manager.bddVar(varId->second);
   }
 
-  if (controllable) {
+  if (!controllable) {
+    uncontrollablesConj = uncontrollablesConj & result;
+  }
+  else {
     controllablesConj = controllablesConj & result;
   }
 }
@@ -119,8 +125,8 @@ CUDD::BDD BddOneStepRealizabilityVisitor::apply(const logic::LTLfFormula &f) {
   return result;
 }
 
-std::optional<move_t> BddOneStepRealizabilityChecker::one_step_realizable(const logic::LTLfFormula &f, Context &context) {
-  auto visitor = BddOneStepRealizabilityVisitor{context};
+std::optional<move_t> BddOneStepRealizabilityChecker::one_step_realizable(const logic::LTLfFormula &f, const InputOutputPartition& partition) {
+  auto visitor = BddOneStepRealizabilityVisitor{partition};
   auto result = visitor.apply(f);
 
   if (result.IsZero()) {
@@ -130,11 +136,44 @@ std::optional<move_t> BddOneStepRealizabilityChecker::one_step_realizable(const 
     return move_t{};
   }
 
-  auto varToQuantify = visitor.controllablesConj;
-  auto quantified = result.ExistAbstract(visitor.controllablesConj);
+  auto univQuantified = result.UnivAbstract(visitor.uncontrollablesConj);
+  auto existQuantified = univQuantified.ExistAbstract(visitor.controllablesConj);
 
-  if (quantified.IsOne()) {
-    return move_t{};
+
+  std::vector<CUDD::BDD> outputs{result, visitor.uncontrollablesConj, visitor.controllablesConj, existQuantified, univQuantified};
+  std::vector<std::string> inames = visitor.variableNames;
+  std::vector<std::string> onames = {"result", "uncontrollablesConj", "controllablesConj", "existQuantified", "univQuantified"};
+
+  std::set<std::string> processed;
+  if (existQuantified.IsOne()) {
+    // realizable
+    move_t move{};
+    char assignment[visitor.propToId.size()];
+    univQuantified.PickOneCube(assignment); // get an assignment
+
+
+    std::string varName;
+    for (int i = 0; i < partition.output_variables.size(); ++i){
+      varName = partition.output_variables[i];
+      auto it = std::find(visitor.variableNames.begin(), visitor.variableNames.end(), varName);
+      if(it == visitor.variableNames.end()) {
+        move.emplace_back(varName, VarValues::DONT_CARE);
+      }
+      else{
+        auto propId = std::distance(visitor.variableNames.begin(), it);
+        if (!visitor.isVariableControllable[propId]){
+          // not controllable; skip
+          continue;
+        }
+        varName = visitor.variableNames[propId];
+        auto value = assignment[propId] == 0 ? VarValues::FALSE : (assignment[propId] == 1? VarValues::TRUE : VarValues::DONT_CARE);
+        move.emplace_back(varName, value);
+        processed.insert(varName);
+      }
+    }
+
+
+    return move;
   }
 
   return std::nullopt;

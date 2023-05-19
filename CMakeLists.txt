@@ -27,6 +27,7 @@ add_definitions( -DNIKE_VERSION="${PROJECT_VERSION}" )
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(ExternalProject)
+include(FetchContent)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # require at least gcc 8
@@ -59,7 +60,12 @@ if ((ENABLE_COVERAGE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
 endif()
 
 if (PROFILE)
+    message("-- Profiling enabled")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -p")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+    set(DCMAKE_EXE_LINKER_FLAGS "${DCMAKE_EXE_LINKER_FLAGS} -pg")
+    set(DCMAKE_SHARED_LINKER_FLAGS "${DCMAKE_SHARED_LINKER_FLAGS} -pg")
 endif()
 
 

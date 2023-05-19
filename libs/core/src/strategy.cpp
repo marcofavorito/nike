@@ -66,7 +66,7 @@ void Strategy::add_move(size_t state, move_t move) {
 
 void Strategy::add_move_from_stack(
     size_t state, std::stack<std::pair<std::string, VarValues>> values) {
-  move_t move = from_stack_to_vector(std::move(values));
+  move_t move = from_stack_to_vector(values);
   add_move(state, move);
 }
 
@@ -86,8 +86,7 @@ move_t Strategy::from_stack_to_vector(
   int index = 0;
   for (const auto &varname : variables_by_id) {
     if (index < temp_move.size() and temp_move[index].first == varname) {
-      result.emplace_back(varname, temp_move[index].second ? VarValues::TRUE
-                                                           : VarValues::FALSE);
+      result.emplace_back(varname, (temp_move[index].second));
       ++index;
     } else {
       result.emplace_back(varname, VarValues::DONT_CARE);

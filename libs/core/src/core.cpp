@@ -76,7 +76,7 @@ bool ForwardSynthesis::forward_synthesis_() {
   if (!context_.disable_one_step_realizability) {
     context_.logger.info("Check one-step realizability");
     auto rel_result =
-        this->context_.realizability_checker->one_step_realizable(*context_.nnf_formula, context_);
+        this->context_.realizability_checker->one_step_realizable(*context_.nnf_formula, context_.partition);
     if (rel_result != std::nullopt) {
       context_.logger.info("One-step realizability check successful");
       return true;
@@ -186,10 +186,11 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
 
   if (!context_.disable_one_step_realizability) {
     auto one_step_realizability_result =
-        this->context_.realizability_checker->one_step_realizable(*formula, context_);
+        this->context_.realizability_checker->one_step_realizable(*formula, context_.partition);
     if (one_step_realizability_result != std::nullopt) {
       context_.print_search_debug(
           "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
+      context_.strategy.add_move(bdd_formula_id, one_step_realizability_result.value());
       context_.discovered[bdd_formula_id] = true;
       context_.indentation -= 1;
       return true;

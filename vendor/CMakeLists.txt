@@ -66,10 +66,19 @@ set(LIB_GLUCOSE_INCLUDE_DIR ${LIB_GLUCOSE_SOURCE_DIR}/.. ${LIB_GLUCOSE_SOURCE_DI
 
 add_custom_target(glucose-libraries DEPENDS glucose ${GLUCOSE_LIBRARIES})
 # -------------------------------------------------------------------------
-
+# -------------------------------------------------------------------------
+# Z3
+FetchContent_Declare(z3
+    GIT_REPOSITORY https://github.com/Z3Prover/z3
+    GIT_TAG        z3-4.12.2
+    )
+FetchContent_MakeAvailable(z3)
+set(Z3_INCLUDE_PATH ${z3_SOURCE_DIR}/src/api/c++)
+set(Z3_LIBRARIES libz3)
+# -------------------------------------------------------------------------
 
 #set variables
-set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH} ${LIB_GLUCOSE_INCLUDE_DIR})
+set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH} ${LIB_GLUCOSE_INCLUDE_DIR} ${LIB_GLUCOSE_INCLUDE_DIR} ${Z3_INCLUDE_PATH})
 
 #set variables for tests
 set (TEST_VENDOR_INCLUDE_PATH ${CATCH_INCLUDE_PATH})
@@ -79,3 +88,4 @@ set (VENDOR_INCLUDE_PATH  ${VENDOR_INCLUDE_PATH} PARENT_SCOPE)
 set (TEST_VENDOR_INCLUDE_PATH  ${TEST_VENDOR_INCLUDE_PATH} PARENT_SCOPE)
 
 set (GLUCOSE_LIBRARIES ${GLUCOSE_LIBRARIES} PARENT_SCOPE)
+set (Z3_LIBRARIES ${Z3_LIBRARIES} PARENT_SCOPE)

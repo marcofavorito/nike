@@ -58,6 +58,31 @@ TEST_CASE("glucose example", "[core][glucose]") {
       std::clog << "UNSAT\n";
     }
 }
+TEST_CASE("glucose example 2", "[core][glucose]") {
+    using Glucose::mkLit;
+    using Glucose::lbool;
+
+    Glucose::Solver solver;
+    // Create variables
+    auto A = solver.newVar();
+    auto B = solver.newVar();
+    // Create the clauses
+    solver.addClause( mkLit(A, true), mkLit(B, true));
+    // Check for solution and retrieve model if found
+    auto sat = solver.solve();
+    if (sat) {
+      std::clog << "SAT\n"
+                << "Model found:\n";
+      std::clog << "A := "
+                << (solver.modelValue(A) == l_True)
+                << '\n';
+      std::clog << "B := "
+                << (solver.modelValue(B) == l_True)
+                << '\n';
+    } else {
+      std::clog << "UNSAT\n";
+    }
+}
 
 } // namespace Test
 } // namespace logic

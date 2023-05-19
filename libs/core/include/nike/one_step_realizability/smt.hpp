@@ -16,7 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cuddObj.hh>
+#include <z3++.h>
 #include <nike/core.hpp>
 #include <nike/logic/visitor.hpp>
 #include <nike/one_step_realizability/base.hpp>
@@ -26,19 +26,17 @@ namespace nike {
   namespace core {
 
 
-    class BddOneStepRealizabilityVisitor : public logic::Visitor {
+    class SmtOneStepRealizabilityVisitor : public logic::Visitor {
     public:
       InputOutputPartition partition;
-      CUDD::Cudd manager;
-      CUDD::BDD result;
-      std::map<logic::ast_ptr, int> propToId;
-      std::vector<std::string> variableNames;
-      std::vector<bool> isVariableControllable;
-      CUDD::BDD uncontrollablesConj;
-      CUDD::BDD controllablesConj;
-      explicit BddOneStepRealizabilityVisitor(const InputOutputPartition &partition)
-          :partition{partition}, manager{CUDD::Cudd(0, 0, 2048, 0)}, controllablesConj{manager.bddOne()}, uncontrollablesConj{manager.bddOne()} {}
-      ~BddOneStepRealizabilityVisitor() {}
+      z3::context& z3_context;
+      z3::solver& solver;
+      z3::expr result;
+      std::set<std::string> uncontrollableVars;
+      // dummy value for 'result' since z3::expr does not have a default constructor
+      explicit SmtOneStepRealizabilityVisitor(const InputOutputPartition &partition, z3::context& z3_context, z3::solver& solver)
+          : partition{partition}, z3_context{z3_context}, solver{solver}, result{z3_context.bool_val(true)} {}
+      ~SmtOneStepRealizabilityVisitor() {}
       void visit(const logic::LTLfTrue &) override;
       void visit(const logic::LTLfFalse &) override;
       void visit(const logic::LTLfPropTrue &) override;
@@ -58,11 +56,20 @@ namespace nike {
       void visit(const logic::LTLfEventually &) override;
       void visit(const logic::LTLfAlways &) override;
 
-      CUDD::BDD apply(const logic::LTLfFormula &f);
+      z3::expr apply(const logic::LTLfFormula &f);
     };
 
-    class BddOneStepRealizabilityChecker : public OneStepRealizabilityChecker {
-      std::optional<move_t> one_step_realizable(const logic::LTLfFormula &f, const InputOutputPartition& partition) override;
+    class SmtOneStepRealizabilityChecker : public OneStepRealizabilityChecker {
+    public:
+      z3::context z3_context;
+      z3::solver solver;
+
+      SmtOneStepRealizabilityChecker() : OneStepRealizabilityChecker(), z3_context{}, solver{z3_context} {
+        z3::params p(z3_context);
+        solver.set(p);
+      }
+
+      std::optional<move_t> one_step_realizable(const logic::LTLfFormula &f, const InputOutputPartition &partition) override;
     };
 
   } // namespace core

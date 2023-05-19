@@ -18,6 +18,7 @@
 #include <catch.hpp>
 #include <cuddObj.hh>
 #include <map>
+#include <iostream>
 
 namespace nike {
 namespace logic {
@@ -39,6 +40,40 @@ TEST_CASE("check exist", "[core][cudd]") {
   REQUIRE(result_x.IsOne());
   REQUIRE(result_and == y);
 }
+TEST_CASE("check univ", "[core][cudd]") {
+  CUDD::Cudd mgr;
+
+  CUDD::BDD x = mgr.bddVar();
+  CUDD::BDD y = mgr.bddVar();
+
+  CUDD::BDD x_or_y = x | y;
+  CUDD::BDD x_and_y = x & y;
+
+  CUDD::BDD result_or = x_or_y.UnivAbstract(x);
+  CUDD::BDD result_and = x_and_y.UnivAbstract(x);
+  CUDD::BDD result_x = x.UnivAbstract(x);
+  REQUIRE(result_or == y);
+  REQUIRE(result_x.IsZero());
+  REQUIRE(result_and.IsZero());
+}
+TEST_CASE("pick cube", "[core][cudd]") {
+  CUDD::Cudd mgr;
+
+  CUDD::BDD x = mgr.bddVar();
+  CUDD::BDD y = mgr.bddVar();
+  CUDD::BDD z = mgr.bddVar();
+
+  CUDD::BDD bdd_or = (x & y) | z;
+
+  char assignment[3];
+  bdd_or.UnivAbstract(z).PickOneCube(assignment);
+  std::string assignment_str = std::string(assignment);
+
+  REQUIRE(assignment_str[0] == 1);
+  REQUIRE(assignment_str[1] == 1);
+  REQUIRE(assignment_str[2] == 2);
+}
+
 TEST_CASE("test zdd", "[core][cudd]") {
   CUDD::Cudd mgr;
 
