@@ -60,6 +60,11 @@ set(LIB_GLUCOSE_SOURCE_DIR ${SOURCE_DIR})
 set(LIB_GLUCOSE_BINARY_DIR ${BINARY_DIR})
 
 set(GLUCOSE_LIBRARIES ${LIB_GLUCOSE_BINARY_DIR}/libglucose.a ${LIB_GLUCOSE_BINARY_DIR}/libglucosep.a)
+# Add a custom command that depends on the output files of the external project
+add_custom_command(OUTPUT ${GLUCOSE_LIBRARIES}
+    COMMAND ${CMAKE_COMMAND} -E echo "Building my_external_project"
+    DEPENDS glucose
+)
 
 set(LIB_GLUCOSE_INCLUDE_DIR ${LIB_GLUCOSE_SOURCE_DIR}/.. ${LIB_GLUCOSE_SOURCE_DIR})
 
