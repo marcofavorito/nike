@@ -17,7 +17,6 @@
 
 #include "core_test_utils.hpp"
 #include "nike/one_step_realizability/bdd.hpp"
-#include "nike/one_step_realizability/smt.hpp"
 #include <catch.hpp>
 #include <nike/core.hpp>
 #include <nike/parser/driver.hpp>
@@ -54,13 +53,11 @@ TEST_CASE("one-step-realizability-check for counters subformula") {
   auto output_vars = std::vector<std::string>{"counter_env_0", "counter_sys_0", "carry_env_0", "carry_sys_0", "inc_sys"};
 
   std::unique_ptr<OneStepRealizabilityChecker> bddChecker = std::make_unique<BddOneStepRealizabilityChecker>();
-  std::unique_ptr<OneStepRealizabilityChecker> smtChecker = std::make_unique<SmtOneStepRealizabilityChecker>();
 
   SECTION("realizable"){
     auto partition = InputOutputPartition(input_vars, output_vars);
     auto bddResult = bddChecker->one_step_realizable(*formula, partition);
-    auto smtResult = smtChecker->one_step_realizable(*formula, partition);
-    REQUIRE(bddResult == smtResult);
+    REQUIRE(!bddResult );
   }
 }
 

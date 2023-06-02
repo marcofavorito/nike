@@ -85,6 +85,7 @@ include_directories(SYSTEM ${USR_DIR}/include)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set (THREADS_PREFER_PTHREAD_FLAG ON)
+set (CUDD_USE_STATIC_LIBS ON)
 find_package(Threads REQUIRED)
 find_package(CUDD REQUIRED)
 find_package(Graphviz REQUIRED)

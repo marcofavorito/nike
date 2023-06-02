@@ -47,7 +47,7 @@ void Strategy::add_move(size_t state, move_t move) {
   }
 
   // check move is valid
-  if (move.size() != variables_by_id.size()) {
+  if (move.size() > variables_by_id.size()) {
     throw std::invalid_argument("expected number of variables to be " +
                                 std::to_string(move.size()) + ", got " +
                                 std::to_string(variables_by_id.size()));

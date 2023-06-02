@@ -97,11 +97,11 @@ int main(int argc, char **argv) {
   }
 
   nike::utils::Logger logger(run_name);
-  nike::utils::Logger::level(nike::utils::LogLevel::info);
-
-  if (verbose) {
-    nike::utils::Logger::level(nike::utils::LogLevel::debug);
-  }
+  nike::utils::Logger::level(nike::utils::LogLevel::off);
+//
+//  if (verbose) {
+//    nike::utils::Logger::level(nike::utils::LogLevel::debug);
+//  }
 
   auto driver = nike::parser::ltlf::LTLfDriver();
   if (!file_opt->empty()) {
@@ -147,9 +147,9 @@ int main(int argc, char **argv) {
   }
 
   if (result)
-    logger.info("realizable.");
+    std::cout << "REALIZABLE" << std::endl;
   else
-    logger.info("unrealizable.");
+    std::cout << "UNREALIZABLE" << std::endl;
 
   auto t_end = std::chrono::high_resolution_clock::now();
   double elapsed_time =

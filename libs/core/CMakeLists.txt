@@ -54,10 +54,6 @@ target_link_libraries (${NIKE_CORE_LIB_NAME}
         ${Z3_LIBRARIES}
     )
 
-add_dependencies(
-    ${NIKE_CORE_LIB_NAME}
-    glucose-libraries
-)
 
 add_subdirectory(tests)
 

@@ -31,6 +31,7 @@ enum class LogLevel {
   debug = spdlog::level::level_enum::debug,
   warning = spdlog::level::level_enum::warn,
   error = spdlog::level::level_enum::err,
+  off = spdlog::level::level_enum::off,
 };
 
 class Logger {
