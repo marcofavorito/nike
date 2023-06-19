@@ -6,7 +6,6 @@
 #include <memory>
 #include <nike/one_step_realizability/base.hpp>
 #include <nike/one_step_realizability/bdd.hpp>
-#include "nike/one_step_realizability/smt.hpp"
 
 
 namespace nike{

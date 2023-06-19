@@ -45,9 +45,3 @@ If you get an error about aclocal, this might be due to either
 3. Using a version of aclocal other than 1.14:
    modify the version 1.14 in configure accordingly.
 
-### ZLib
-
-On Ubuntu 22.04:
-```
-sudo apt install zlib1g-dev
-```

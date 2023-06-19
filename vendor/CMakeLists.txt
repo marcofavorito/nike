@@ -40,48 +40,6 @@ set (CLI11_MODULE_PATH "${VENDOR_MODULE_PATH}/cli11")
 set (CLI11_INCLUDE_PATH "${CLI11_MODULE_PATH}/include")
 # -------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-# Glucose
-ExternalProject_Add(glucose
-    GIT_REPOSITORY https://github.com/whitemech/glucose.git
-    GIT_TAG v4.2.1
-    GIT_PROGRESS true
-    CMAKE_ARGS
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DCMAKE_INSTALL_PREFIX=${USR_DIR}
-    -DCMAKE_BUILD_TYPE=Release
-    INSTALL_COMMAND ""
-)
-
-ExternalProject_Get_Property(glucose SOURCE_DIR BINARY_DIR)
-set(LIB_GLUCOSE_SOURCE_DIR ${SOURCE_DIR})
-set(LIB_GLUCOSE_BINARY_DIR ${BINARY_DIR})
-
-set(GLUCOSE_LIBRARIES ${LIB_GLUCOSE_BINARY_DIR}/libglucose.a ${LIB_GLUCOSE_BINARY_DIR}/libglucosep.a)
-# Add a custom command that depends on the output files of the external project
-add_custom_command(OUTPUT ${GLUCOSE_LIBRARIES}
-    COMMAND ${CMAKE_COMMAND} -E echo "Building my_external_project"
-    DEPENDS glucose
-)
-
-set(LIB_GLUCOSE_INCLUDE_DIR ${LIB_GLUCOSE_SOURCE_DIR}/.. ${LIB_GLUCOSE_SOURCE_DIR})
-
-
-add_custom_target(glucose-libraries DEPENDS glucose ${GLUCOSE_LIBRARIES})
-# -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-# Z3
-FetchContent_Declare(z3
-    GIT_REPOSITORY https://github.com/Z3Prover/z3
-    GIT_TAG        z3-4.12.2
-    )
-FetchContent_MakeAvailable(z3)
-set(Z3_INCLUDE_PATH ${z3_SOURCE_DIR}/src/api/c++)
-set(Z3_LIBRARIES libz3)
-# -------------------------------------------------------------------------
-
 #set variables
 set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH} ${LIB_GLUCOSE_INCLUDE_DIR} ${LIB_GLUCOSE_INCLUDE_DIR} ${Z3_INCLUDE_PATH})
 
@@ -91,6 +49,3 @@ set (TEST_VENDOR_INCLUDE_PATH ${CATCH_INCLUDE_PATH})
 #export vars
 set (VENDOR_INCLUDE_PATH  ${VENDOR_INCLUDE_PATH} PARENT_SCOPE)
 set (TEST_VENDOR_INCLUDE_PATH  ${TEST_VENDOR_INCLUDE_PATH} PARENT_SCOPE)
-
-set (GLUCOSE_LIBRARIES ${GLUCOSE_LIBRARIES} PARENT_SCOPE)
-set (Z3_LIBRARIES ${Z3_LIBRARIES} PARENT_SCOPE)
