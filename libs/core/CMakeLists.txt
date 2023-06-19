@@ -51,6 +51,7 @@ target_link_libraries (${NIKE_CORE_LIB_NAME}
         ${NIKE_LOGIC_LIB_NAME}
         ${NIKE_PARSER_LIB_NAME}
         ${CUDD_LIBRARIES}
+        ${GLUCOSE_LIBRARIES}
         ${Z3_LIBRARIES}
     )
 

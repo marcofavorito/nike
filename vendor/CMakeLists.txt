@@ -40,7 +40,6 @@ set (CLI11_MODULE_PATH "${VENDOR_MODULE_PATH}/cli11")
 set (CLI11_INCLUDE_PATH "${CLI11_MODULE_PATH}/include")
 # -------------------------------------------------------------------------
 
-
 #set variables
 set (VENDOR_INCLUDE_PATH ${SPDLOG_INCLUDE_PATH} ${CLI11_INCLUDE_PATH} ${LIB_GLUCOSE_INCLUDE_DIR} ${LIB_GLUCOSE_INCLUDE_DIR} ${Z3_INCLUDE_PATH})
 

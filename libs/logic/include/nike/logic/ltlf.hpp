@@ -35,7 +35,9 @@ public:
 class LTLfTrue : public LTLfFormula {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfTrue;
-  explicit LTLfTrue(Context &ctx) : LTLfFormula(ctx) {}
+  explicit LTLfTrue(Context &ctx) : LTLfFormula(ctx) {
+    metadata_.accepts_empty = true;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -47,7 +49,9 @@ public:
 class LTLfFalse : public LTLfFormula {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfFalse;
-  explicit LTLfFalse(Context &ctx) : LTLfFormula(ctx) {}
+  explicit LTLfFalse(Context &ctx) : LTLfFormula(ctx) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -59,7 +63,9 @@ public:
 class LTLfPropTrue : public LTLfFormula {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfPropTrue;
-  explicit LTLfPropTrue(Context &ctx) : LTLfFormula(ctx) {}
+  explicit LTLfPropTrue(Context &ctx) : LTLfFormula(ctx) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -71,7 +77,9 @@ public:
 class LTLfPropFalse : public LTLfFormula {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfPropFalse;
-  explicit LTLfPropFalse(Context &ctx) : LTLfFormula(ctx) {}
+  explicit LTLfPropFalse(Context &ctx) : LTLfFormula(ctx) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -87,7 +95,9 @@ public:
   LTLfAtom(Context &ctx, const std::string &name)
       : LTLfFormula(ctx), symbol{ctx.make_string_symbol(name)} {}
   LTLfAtom(Context &ctx, const ast_ptr &symbol)
-      : LTLfFormula(ctx), symbol{symbol} {}
+      : LTLfFormula(ctx), symbol{symbol} {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -115,6 +125,7 @@ public:
     if (!is_propositional(this->arg))
       throw std::invalid_argument(
           "PropositionalNot only accepts LTLfAtom as arguments.");
+    metadata_.accepts_empty = true;
   }
 
   void accept(Visitor &visitor) const override;
@@ -127,7 +138,9 @@ public:
 class LTLfNot : public LTLfUnaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfNot;
-  LTLfNot(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {}
+  LTLfNot(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {
+    metadata_.accepts_empty = this->arg->metadata().accepts_empty;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -174,6 +187,8 @@ public:
                 args)) {}
   LTLfCommutativeIdempotentBinaryOp(Context &ctx, const set_ptr &args)
       : LTLfBinaryOp(ctx, args) {}
+protected:
+  void set_accepts_empty(bool op_x_not_x);
 };
 
 class LTLfAnd : public LTLfCommutativeIdempotentBinaryOp,
@@ -185,9 +200,13 @@ public:
   const static TypeID type_code_id = TypeID::t_LTLfAnd;
   LTLfAnd(Context &ctx, vec_ptr args)
       : LTLfCommutativeIdempotentBinaryOp(ctx, std::move(args)),
-        BooleanBinaryOp(and_) {}
+        BooleanBinaryOp(and_) {
+    set_accepts_empty(false);
+  }
   LTLfAnd(Context &ctx, const set_ptr &args)
-      : LTLfCommutativeIdempotentBinaryOp(ctx, args), BooleanBinaryOp(and_) {}
+      : LTLfCommutativeIdempotentBinaryOp(ctx, args), BooleanBinaryOp(and_) {
+    set_accepts_empty(false);
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -202,9 +221,13 @@ public:
   const static TypeID type_code_id = TypeID::t_LTLfOr;
   LTLfOr(Context &ctx, vec_ptr args)
       : LTLfCommutativeIdempotentBinaryOp(ctx, std::move(args)),
-        BooleanBinaryOp(or_) {}
+        BooleanBinaryOp(or_) {
+    set_accepts_empty(true);
+  }
   LTLfOr(Context &ctx, const set_ptr &args)
-      : LTLfCommutativeIdempotentBinaryOp(ctx, args), BooleanBinaryOp(or_) {}
+      : LTLfCommutativeIdempotentBinaryOp(ctx, args), BooleanBinaryOp(or_) {
+    set_accepts_empty(true);
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -264,7 +287,9 @@ public:
 class LTLfNext : public LTLfUnaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfNext;
-  LTLfNext(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {}
+  LTLfNext(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -273,7 +298,9 @@ public:
 class LTLfWeakNext : public LTLfUnaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfWeakNext;
-  LTLfWeakNext(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {}
+  LTLfWeakNext(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {
+    metadata_.accepts_empty = true;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -283,7 +310,9 @@ class LTLfUntil : public LTLfBinaryOp {
 
 public:
   const static TypeID type_code_id = TypeID::t_LTLfUntil;
-  LTLfUntil(Context &ctx, vec_ptr args) : LTLfBinaryOp(ctx, std::move(args)) {}
+  LTLfUntil(Context &ctx, vec_ptr args) : LTLfBinaryOp(ctx, std::move(args)) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -293,7 +322,9 @@ class LTLfRelease : public LTLfBinaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfRelease;
   LTLfRelease(Context &ctx, vec_ptr args)
-      : LTLfBinaryOp(ctx, std::move(args)) {}
+      : LTLfBinaryOp(ctx, std::move(args)) {
+    metadata_.accepts_empty = true;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -303,7 +334,9 @@ class LTLfEventually : public LTLfUnaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfEventually;
   LTLfEventually(Context &ctx, ltlf_ptr arg)
-      : LTLfUnaryOp(ctx, std::move(arg)) {}
+      : LTLfUnaryOp(ctx, std::move(arg)) {
+    metadata_.accepts_empty = false;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
@@ -312,7 +345,9 @@ public:
 class LTLfAlways : public LTLfUnaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfAlways;
-  LTLfAlways(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {}
+  LTLfAlways(Context &ctx, ltlf_ptr arg) : LTLfUnaryOp(ctx, std::move(arg)) {
+    metadata_.accepts_empty = true;
+  }
 
   void accept(Visitor &visitor) const override;
   inline TypeID get_type_code() const override;
