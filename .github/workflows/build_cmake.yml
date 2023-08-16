@@ -60,6 +60,8 @@ jobs:
           sudo apt-get purge -y bison
           sudo apt-get install -y flex bison
           sudo apt-get autoremove
+          
+          sudo apt-get install -y graphviz libgraphviz-dev
 
           sudo python3 -m pip install gcovr
 #      - name: Check clang-tidy
