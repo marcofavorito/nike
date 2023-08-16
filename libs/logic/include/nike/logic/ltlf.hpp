@@ -187,6 +187,7 @@ public:
                 args)) {}
   LTLfCommutativeIdempotentBinaryOp(Context &ctx, const set_ptr &args)
       : LTLfBinaryOp(ctx, args) {}
+
 protected:
   void set_accepts_empty(bool op_x_not_x);
 };
@@ -321,8 +322,7 @@ public:
 class LTLfRelease : public LTLfBinaryOp {
 public:
   const static TypeID type_code_id = TypeID::t_LTLfRelease;
-  LTLfRelease(Context &ctx, vec_ptr args)
-      : LTLfBinaryOp(ctx, std::move(args)) {
+  LTLfRelease(Context &ctx, vec_ptr args) : LTLfBinaryOp(ctx, std::move(args)) {
     metadata_.accepts_empty = true;
   }
 

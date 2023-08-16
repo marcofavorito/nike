@@ -16,6 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "metadata.hpp"
 #include <cassert>
 #include <memory>
 #include <nike/logic/comparable.hpp>
@@ -24,7 +25,6 @@
 #include <nike/logic/visitable.hpp>
 #include <nike/utils.hpp>
 #include <utility>
-#include "metadata.hpp"
 
 namespace nike {
 namespace logic {
@@ -38,6 +38,7 @@ class AstNode : public Visitable,
 private:
   Context *m_ctx_;
   friend Context;
+
 protected:
   Metadata metadata_;
 
@@ -114,7 +115,9 @@ public:
   pl_ptr make_prop_or(const vec_pl_ptr &arg);
 };
 
-template <typename T, typename caller, typename True, typename False, typename std::enable_if<std::is_base_of<AstNode, T>::value>::type* = nullptr>
+template <typename T, typename caller, typename True, typename False,
+          typename std::enable_if<std::is_base_of<AstNode, T>::value>::type * =
+              nullptr>
 std::shared_ptr<T>
 and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
        bool op_x_notx, std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
@@ -151,10 +154,13 @@ and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
   return std::make_shared<caller>(context, args);
 }
 
-template <typename T, typename caller, typename True, typename False, typename std::enable_if<std::is_base_of<AstNode, T>::value>::type* = nullptr>
+template <typename T, typename caller, typename True, typename False,
+          typename std::enable_if<std::is_base_of<AstNode, T>::value>::type * =
+              nullptr>
 std::shared_ptr<T>
 ltlf_and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
-       bool op_x_notx, std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
+            bool op_x_notx,
+            std::shared_ptr<T> (Context::*const &fun_ptr)(bool x)) {
   std::set<std::shared_ptr<const T>, utils::Deref::Less> args;
   for (auto &a : s) {
     // handle the case when a subformula is true
@@ -164,14 +170,14 @@ ltlf_and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
       else
         continue;
     }
-      // handle the case when a subformula is false
+    // handle the case when a subformula is false
     else if (is_a<False>(*a)) {
       if (!op_x_notx)
         return a;
       else
         continue;
     }
-      // handle the case when a subformula is of the same type of the caller
+    // handle the case when a subformula is of the same type of the caller
     else if (is_a<caller>(*a)) {
       const auto &to_insert = dynamic_cast<const caller &>(*a);
       const auto &container = to_insert.args;
@@ -193,20 +199,20 @@ ltlf_and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
   auto not_end = context.make_not_end();
 
   bool end_found = false;
-  if (args.find(end) != args.end()){
+  if (args.find(end) != args.end()) {
     // end found
     end_found = true;
     args.erase(end);
   }
   bool not_end_found = false;
-  if (args.find(not_end) != args.end()){
+  if (args.find(not_end) != args.end()) {
     // not-end found
     not_end_found = true;
     args.erase(not_end);
   }
 
-  if (end_found and not_end_found){
-    return op_x_notx? context.make_tt() : context.make_ff();
+  if (end_found and not_end_found) {
+    return op_x_notx ? context.make_tt() : context.make_ff();
   }
 
   if (not end_found and not not_end_found) {
@@ -216,18 +222,20 @@ ltlf_and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
   // one of F(tt) and G(ff) is in args
   bool flag_set = false;
   bool global_accept_empty = false;
-  for (const auto & subformula : args) {
+  for (const auto &subformula : args) {
 
-    if (!flag_set){
+    if (!flag_set) {
       global_accept_empty = subformula->metadata().accepts_empty;
       flag_set = true;
       continue;
     }
 
     if (op_x_notx)
-      global_accept_empty = global_accept_empty or subformula->metadata().accepts_empty;
+      global_accept_empty =
+          global_accept_empty or subformula->metadata().accepts_empty;
     else
-      global_accept_empty = global_accept_empty and subformula->metadata().accepts_empty;
+      global_accept_empty =
+          global_accept_empty and subformula->metadata().accepts_empty;
   }
 
   // F(tt) |  accepts_empty = tt
@@ -240,10 +248,12 @@ ltlf_and_or(Context &context, const std::vector<std::shared_ptr<const T>> &s,
   if (not op_x_notx and not_end_found and global_accept_empty)
     args.insert(not_end);
   // F(tt) & !accepts_empty = !accepts_empty
-  if (not op_x_notx and not_end_found and not global_accept_empty) {}
+  if (not op_x_notx and not_end_found and not global_accept_empty) {
+  }
 
   // G(ff) |  accepts_empty = accepts_empty
-  if (op_x_notx and end_found and global_accept_empty){}
+  if (op_x_notx and end_found and global_accept_empty) {
+  }
   // G(ff) | !accepts_empty = G(ff) | !accepts_empty
   if (op_x_notx and end_found and not global_accept_empty)
     args.insert(end);

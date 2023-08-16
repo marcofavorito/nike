@@ -75,14 +75,13 @@ bool ForwardSynthesis::forward_synthesis_() {
 
   if (!context_.disable_one_step_realizability) {
     context_.logger.info("Check one-step realizability");
-    auto rel_result =
-        this->context_.realizability_checker->one_step_realizable(*context_.nnf_formula, context_.partition);
+    auto rel_result = this->context_.realizability_checker->one_step_realizable(
+        *context_.nnf_formula, context_.partition);
     if (rel_result != std::nullopt) {
       context_.logger.info("One-step realizability check successful");
       return true;
     }
-  }
-  else {
+  } else {
     context_.logger.info("One-step realizability check disabled");
   }
 
@@ -94,8 +93,7 @@ bool ForwardSynthesis::forward_synthesis_() {
       context_.logger.info("One-step unrealizability check successful");
       return false;
     }
-  }
-  else{
+  } else {
     context_.logger.info("One-step unrealizability check disabled");
   }
 
@@ -111,8 +109,9 @@ bool ForwardSynthesis::forward_synthesis_() {
   return is_realizable;
 }
 
-std::map<std::string, size_t> Context::compute_prop_to_id_map(
-    const Closure &closure, const InputOutputPartition &partition) {
+std::map<std::string, size_t>
+Context::compute_prop_to_id_map(const Closure &closure,
+                                const InputOutputPartition &partition) {
   std::map<std::string, size_t> result;
   size_t offset = closure.nb_formulas();
   size_t i = offset;
@@ -186,11 +185,14 @@ bool ForwardSynthesis::system_move_(const logic::ltlf_ptr &formula) {
 
   if (!context_.disable_one_step_realizability) {
     auto one_step_realizability_result =
-        this->context_.realizability_checker->one_step_realizable(*formula, context_.partition);
+        this->context_.realizability_checker->one_step_realizable(
+            *formula, context_.partition);
     if (one_step_realizability_result != std::nullopt) {
       context_.print_search_debug(
-          "One-step realizability success for node {}: SUCCESS", bdd_formula_id);
-      context_.strategy.add_move(bdd_formula_id, one_step_realizability_result.value());
+          "One-step realizability success for node {}: SUCCESS",
+          bdd_formula_id);
+      context_.strategy.add_move(bdd_formula_id,
+                                 one_step_realizability_result.value());
       context_.discovered[bdd_formula_id] = true;
       context_.indentation -= 1;
       return true;
@@ -445,17 +447,14 @@ void ForwardSynthesis::backprop_success(size_t &node_id, NodeType node_type) {
 }
 
 Context::Context(const logic::ltlf_ptr &formula,
-                                   const InputOutputPartition &partition,
-                                   BranchingStrategy bs,
-                                   StateEquivalenceMode mode,
-                                   double max_size_factor,
-                                   std::string logger_section_name,
-                                   bool disable_one_step_realizability,
-                                   bool disable_one_step_unrealizability)
+                 const InputOutputPartition &partition, BranchingStrategy bs,
+                 StateEquivalenceMode mode, double max_size_factor,
+                 std::string logger_section_name,
+                 bool disable_one_step_realizability,
+                 bool disable_one_step_unrealizability)
     : logger{std::move(logger_section_name)},
-    realizability_checker{get_default_realizability_checker()},
-    formula{formula},
-      partition{partition}, ast_manager{&formula->ctx()},
+      realizability_checker{get_default_realizability_checker()},
+      formula{formula}, partition{partition}, ast_manager{&formula->ctx()},
       strategy{partition.output_variables}, bs{bs}, mode{mode},
       disable_one_step_realizability{disable_one_step_realizability},
       disable_one_step_unrealizability{disable_one_step_unrealizability} {
@@ -465,7 +464,8 @@ Context::Context(const logic::ltlf_ptr &formula,
   current_max_size_ = logic::size(*xnf_formula) * max_size_factor;
   Closure closure_object = closure(*xnf_formula);
   closure_ = closure_object;
-  if (disable_one_step_realizability and disable_one_step_unrealizability and mode != StateEquivalenceMode::BDD) {
+  if (disable_one_step_realizability and disable_one_step_unrealizability and
+      mode != StateEquivalenceMode::BDD) {
     manager_ = CUDD::Cudd(closure_.nb_formulas(), 0, 4096);
     manager_.AutodynEnable();
   }

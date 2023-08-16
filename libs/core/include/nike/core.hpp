@@ -16,6 +16,7 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "nike/one_step_realizability/base.hpp"
 #include <cuddObj.hh>
 #include <nike/closure.hpp>
 #include <nike/core_base.hpp>
@@ -27,8 +28,6 @@
 #include <nike/statistics.hpp>
 #include <nike/strategy.hpp>
 #include <utility>
-#include "nike/one_step_realizability/base.hpp"
-
 
 namespace nike {
 namespace core {
@@ -43,62 +42,61 @@ public:
   explicit interrupted_exception() : std::exception() {}
 };
 
-  class Context {
-  public:
-    logic::ltlf_ptr formula;
-    InputOutputPartition partition;
-    logic::Context *ast_manager;
-    std::unique_ptr<OneStepRealizabilityChecker> realizability_checker;
-    logic::ltlf_ptr nnf_formula;
-    logic::ltlf_ptr xnf_formula;
-    Closure closure_;
-    CUDD::Cudd manager_;
-    Statistics statistics_;
-    Graph graph;
-    Strategy strategy;
-    Path path;
-    std::map<std::string, size_t> prop_to_id;
-    std::map<size_t, bool> discovered;
-    std::set<long> loop_tags;
-    std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
-    std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
-    utils::Logger logger;
-    size_t indentation = 0;
-    std::vector<int> controllable_map;
-    std::vector<int> uncontrollable_map;
-    size_t current_max_size_;
-    std::unique_ptr<BranchVariable> branch_variable;
-    StateEquivalenceMode mode;
-    BranchingStrategy bs;
-    bool stopped = false;
-    bool disable_one_step_realizability = false;
-    bool disable_one_step_unrealizability = false;
-    Context(const logic::ltlf_ptr &formula,
-            const InputOutputPartition &partition, BranchingStrategy bs,
-            StateEquivalenceMode mode, double max_size_factor = 3.0,
-            std::string logger_section_name = "nike",
-            bool disable_one_step_realizability = false,
-            bool disable_one_step_unrealizability = false);
-    ~Context() = default;
+class Context {
+public:
+  logic::ltlf_ptr formula;
+  InputOutputPartition partition;
+  logic::Context *ast_manager;
+  std::unique_ptr<OneStepRealizabilityChecker> realizability_checker;
+  logic::ltlf_ptr nnf_formula;
+  logic::ltlf_ptr xnf_formula;
+  Closure closure_;
+  CUDD::Cudd manager_;
+  Statistics statistics_;
+  Graph graph;
+  Strategy strategy;
+  Path path;
+  std::map<std::string, size_t> prop_to_id;
+  std::map<size_t, bool> discovered;
+  std::set<long> loop_tags;
+  std::map<long, logic::ltlf_ptr> sdd_node_id_to_formula;
+  std::map<logic::ltlf_ptr, CUDD::BDD> formula_to_bdd_node;
+  utils::Logger logger;
+  size_t indentation = 0;
+  std::vector<int> controllable_map;
+  std::vector<int> uncontrollable_map;
+  size_t current_max_size_;
+  std::unique_ptr<BranchVariable> branch_variable;
+  StateEquivalenceMode mode;
+  BranchingStrategy bs;
+  bool stopped = false;
+  bool disable_one_step_realizability = false;
+  bool disable_one_step_unrealizability = false;
+  Context(const logic::ltlf_ptr &formula, const InputOutputPartition &partition,
+          BranchingStrategy bs, StateEquivalenceMode mode,
+          double max_size_factor = 3.0,
+          std::string logger_section_name = "nike",
+          bool disable_one_step_realizability = false,
+          bool disable_one_step_unrealizability = false);
+  ~Context() = default;
 
-    template <typename Arg1, typename... Args>
-    inline void print_search_debug(const char *fmt, const Arg1 &arg1,
-                                   const Args &...args) const {
-      logger.debug((std::string(indentation, ' ') + fmt).c_str(), arg1,
-                   args...);
-    };
-    inline void print_search_debug(const char *fmt) const {
-      logger.debug((std::string(indentation, ' ') + fmt).c_str());
-    };
-
-    void initialie_maps_();
-    void reset();
-
-  private:
-    static std::map<std::string, size_t>
-    compute_prop_to_id_map(const Closure &closure,
-                           const InputOutputPartition &partition);
+  template <typename Arg1, typename... Args>
+  inline void print_search_debug(const char *fmt, const Arg1 &arg1,
+                                 const Args &...args) const {
+    logger.debug((std::string(indentation, ' ') + fmt).c_str(), arg1, args...);
   };
+  inline void print_search_debug(const char *fmt) const {
+    logger.debug((std::string(indentation, ' ') + fmt).c_str());
+  };
+
+  void initialie_maps_();
+  void reset();
+
+private:
+  static std::map<std::string, size_t>
+  compute_prop_to_id_map(const Closure &closure,
+                         const InputOutputPartition &partition);
+};
 
 class ForwardSynthesis : public ISynthesis {
 public:
@@ -111,8 +109,14 @@ public:
                    bool disable_one_step_unrealizability = false,
                    double max_size_factor = 3.0)
       : ISynthesis(formula, partition),
-        context_{formula, partition,       bs,
-                 mode,    max_size_factor, std::move(logger_section_name), disable_one_step_realizability, disable_one_step_unrealizability} {};
+        context_{formula,
+                 partition,
+                 bs,
+                 mode,
+                 max_size_factor,
+                 std::move(logger_section_name),
+                 disable_one_step_realizability,
+                 disable_one_step_unrealizability} {};
   bool is_realizable() override;
   void register_termination_callback(DD_THFP callback,
                                      void *callback_arg) const;

@@ -57,8 +57,7 @@ public:
   CUDD::BDD apply(const logic::LTLfFormula &f);
 };
 
-bool one_step_unrealizability(const logic::LTLfFormula &f,
-                              Context &context);
+bool one_step_unrealizability(const logic::LTLfFormula &f, Context &context);
 
 } // namespace core
 } // namespace nike

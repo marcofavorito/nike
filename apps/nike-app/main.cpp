@@ -36,9 +36,13 @@ int main(int argc, char **argv) {
   bool multithreaded = false;
   app.add_flag("-t,--multithreaded", multithreaded, "Multithreaded mode.");
   bool disable_one_step_realizability = false;
-  app.add_flag("--disable-one-step-realizability", disable_one_step_realizability, "Disable one-step realizability.");
+  app.add_flag("--disable-one-step-realizability",
+               disable_one_step_realizability,
+               "Disable one-step realizability.");
   bool disable_one_step_unrealizability = false;
-  app.add_flag("--disable-one-step-unrealizability", disable_one_step_unrealizability, "Disable one-step unrealizability.");
+  app.add_flag("--disable-one-step-unrealizability",
+               disable_one_step_unrealizability,
+               "Disable one-step unrealizability.");
 
   std::map<std::string, nike::core::StateEquivalenceMode> map{
       {nike::core::mode_to_string(nike::core::StateEquivalenceMode::BDD),
@@ -98,10 +102,10 @@ int main(int argc, char **argv) {
 
   nike::utils::Logger logger(run_name);
   nike::utils::Logger::level(nike::utils::LogLevel::off);
-//
-//  if (verbose) {
-//    nike::utils::Logger::level(nike::utils::LogLevel::debug);
-//  }
+  //
+  //  if (verbose) {
+  //    nike::utils::Logger::level(nike::utils::LogLevel::debug);
+  //  }
 
   auto driver = nike::parser::ltlf::LTLfDriver();
   if (!file_opt->empty()) {
@@ -143,7 +147,9 @@ int main(int argc, char **argv) {
                 branching_strategy_to_string(branching_strategy_id));
 
     result = nike::core::is_realizable<nike::core::ForwardSynthesis>(
-        parsed_formula, partition, branching_strategy_id, mode, run_name, disable_one_step_realizability=disable_one_step_realizability, disable_one_step_unrealizability=disable_one_step_unrealizability);
+        parsed_formula, partition, branching_strategy_id, mode, run_name,
+        disable_one_step_realizability = disable_one_step_realizability,
+        disable_one_step_unrealizability = disable_one_step_unrealizability);
   }
 
   if (result)

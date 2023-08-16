@@ -17,8 +17,8 @@
 
 #include <catch.hpp>
 #include <cuddObj.hh>
-#include <map>
 #include <iostream>
+#include <map>
 
 namespace nike {
 namespace logic {

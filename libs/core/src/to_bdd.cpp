@@ -115,8 +115,7 @@ CUDD::BDD ToBddVisitor::get_bdd_var(const logic::LTLfFormula &formula) {
   return context_.manager_.bddVar();
 }
 
-CUDD::BDD to_bdd(const logic::LTLfFormula &formula,
-                 Context &context) {
+CUDD::BDD to_bdd(const logic::LTLfFormula &formula, Context &context) {
   ToBddVisitor visitor{context};
   auto result = visitor.apply(formula);
   return result;

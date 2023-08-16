@@ -29,8 +29,7 @@ private:
   Context &context_;
 
 public:
-  explicit ToBddVisitor(Context &context)
-      : context_{context} {}
+  explicit ToBddVisitor(Context &context) : context_{context} {}
   void visit(const logic::LTLfTrue &) override;
   void visit(const logic::LTLfFalse &) override;
   void visit(const logic::LTLfPropTrue &) override;
@@ -54,8 +53,7 @@ public:
   CUDD::BDD get_bdd_var(const logic::LTLfFormula &formula);
 };
 
-CUDD::BDD to_bdd(const logic::LTLfFormula &formula,
-                 Context &context);
+CUDD::BDD to_bdd(const logic::LTLfFormula &formula, Context &context);
 
 } // namespace core
 } // namespace nike

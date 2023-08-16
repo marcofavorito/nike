@@ -17,12 +17,12 @@
  */
 
 #include <algorithm>
+#include <cuddObj.hh>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-#include <cuddObj.hh>
 
 namespace nike {
 namespace utils {
@@ -186,12 +186,9 @@ template <class T> inline int ordered_compare(const T &A, const T &B) {
   return 0;
 }
 
-
-void dump_bdd(CUDD::Cudd& manager,
-              const std::vector<CUDD::BDD>& nodes,
-              std::vector<std::string>& inames,
-              std::vector<std::string>& onames,
-              FILE * fp);
+void dump_bdd(CUDD::Cudd &manager, const std::vector<CUDD::BDD> &nodes,
+              std::vector<std::string> &inames,
+              std::vector<std::string> &onames, FILE *fp);
 
 } // namespace utils
 } // namespace nike

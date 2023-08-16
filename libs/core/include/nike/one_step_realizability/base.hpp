@@ -16,24 +16,25 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <optional>
+#include <nike/input_output_partition.hpp>
 #include <nike/logic/ltlf.hpp>
 #include <nike/strategy.hpp>
-#include <nike/input_output_partition.hpp>
+#include <optional>
 
-
-namespace nike{
+namespace nike {
 namespace core {
 
-  class Context;
+class Context;
 
-  class OneStepRealizabilityChecker {
-  public:
-    virtual std::optional<move_t> one_step_realizable(const logic::LTLfFormula &f, const InputOutputPartition& partition) = 0;
+class OneStepRealizabilityChecker {
+public:
+  virtual std::optional<move_t>
+  one_step_realizable(const logic::LTLfFormula &f,
+                      const InputOutputPartition &partition) = 0;
+};
 
-  };
+std::unique_ptr<OneStepRealizabilityChecker>
+get_default_realizability_checker();
 
-  std::unique_ptr<OneStepRealizabilityChecker> get_default_realizability_checker();
-
-}
-}
+} // namespace core
+} // namespace nike

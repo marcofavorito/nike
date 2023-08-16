@@ -16,15 +16,13 @@
  * along with Nike.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 namespace nike {
-  namespace logic {
+namespace logic {
 
-    class Metadata{
-    public:
-      bool accepts_empty;
-    };
+class Metadata {
+public:
+  bool accepts_empty;
+};
 
-
-  }
-  }
+} // namespace logic
+} // namespace nike

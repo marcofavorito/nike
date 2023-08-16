@@ -56,16 +56,15 @@ std::vector<std::string> split_with_delimiter(std::string str,
   return tokens;
 }
 
-void dump_bdd(CUDD::Cudd& manager,
-              const std::vector<CUDD::BDD>& nodes,
-              std::vector<std::string>& inames_vec,
-              std::vector<std::string>& onames_vec,
-              FILE * fp){
-  std::vector<const char*> inames;
-  std::vector<const char*> onames;
+void dump_bdd(CUDD::Cudd &manager, const std::vector<CUDD::BDD> &nodes,
+              std::vector<std::string> &inames_vec,
+              std::vector<std::string> &onames_vec, FILE *fp) {
+  std::vector<const char *> inames;
+  std::vector<const char *> onames;
 
-  auto f = [&](std::vector<std::string>& input, std::vector<const char*>& output){
-    for (const auto& s : input)
+  auto f = [&](std::vector<std::string> &input,
+               std::vector<const char *> &output) {
+    for (const auto &s : input)
       output.push_back(s.data());
   };
 
@@ -74,7 +73,6 @@ void dump_bdd(CUDD::Cudd& manager,
 
   manager.DumpDot(nodes, inames.data(), onames.data(), fp);
 }
-
 
 } // namespace utils
 } // namespace nike
