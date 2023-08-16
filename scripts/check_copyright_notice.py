@@ -71,7 +71,7 @@ PY_HEADER_REGEX = re.compile(
 )
 CMAKE_HEADER_REGEX = re.compile(r"^{}".format(HASH_COPYRIGHT_NOTICE), re.MULTILINE)
 
-ROOT = Path(os.path.dirname(inspect.getfile(inspect.currentframe())), "..").absolute()
+ROOT = Path(os.path.dirname(inspect.getfile(inspect.currentframe())), "..").resolve()
 INCLUDE = {
     *filter(methodcaller("is_file"), Path("apps").glob("**/*")),
     *filter(methodcaller("is_file"), Path("libs").glob("**/*")),
@@ -79,7 +79,11 @@ INCLUDE = {
     Path("vendor/CMakeLists.txt"),
     Path("CMakeLists.txt"),
 }
-IGNORE = {Path("scripts", "run-clang-tidy.py")}
+INCLUDE = {p.resolve() for p in INCLUDE}
+IGNORE = {
+    Path("scripts", "run-clang-tidy.py").resolve(),
+    Path("libs", "core", "tests", "integration", "finite-synthesis-datasets").resolve(),
+}
 
 
 def file_matches(path: Path) -> bool:
@@ -99,7 +103,9 @@ def file_matches(path: Path) -> bool:
 
 if __name__ == "__main__":
     bad_files = set()  # type: Set[Path]
-    for path in INCLUDE.difference(IGNORE):
+    for path in INCLUDE:
+        if any(str(path).startswith(str(i)) for i in IGNORE):
+            continue
         print("Processing {}".format(path))
         if not file_matches(path):
             bad_files.add(path)
